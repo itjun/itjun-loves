@@ -1,5 +1,6 @@
 /**
  * 各效果的目标点生成：气泡会汇聚到这些坐标。
+ * 手机竖屏会下移中心、缩小尺寸，避免挡住顶部计时器。
  */
 
 function heartPoint(t, scale) {
@@ -17,13 +18,37 @@ function jitterPoint(x, y, amount) {
 }
 
 function centerY(H, options) {
+  if (options.isPhone) {
+    return H * (options.heartCenterY || 0.6);
+  }
   return H * (options.heartCenterY || 0.56);
+}
+
+/** 把目标点夹在安全区域内，避免贴边或盖住顶部 UI */
+export function clampTargets(points, W, H, isPhone) {
+  const padX = isPhone ? Math.max(14, W * 0.04) : Math.max(20, W * 0.03);
+  const top = H * (isPhone ? 0.32 : 0.26);
+  const bottom = H * (isPhone ? 0.9 : 0.93);
+  for (const p of points) {
+    if (p.x < padX) {
+      p.x = padX;
+    } else if (p.x > W - padX) {
+      p.x = W - padX;
+    }
+    if (p.y < top) {
+      p.y = top;
+    } else if (p.y > bottom) {
+      p.y = bottom;
+    }
+  }
+  return points;
 }
 
 export function buildHeartTargets(n, W, H, options) {
   const points = [];
-  const base = Math.min(W, H) * options.heartScale;
-  const rings = [1.0, 0.88, 0.76, 0.64, 0.52];
+  const scaleFactor = options.isPhone ? options.heartScale * 0.95 : options.heartScale;
+  const base = Math.min(W, H) * scaleFactor;
+  const rings = options.isPhone ? [1.0, 0.86, 0.72, 0.58] : [1.0, 0.88, 0.76, 0.64, 0.52];
   const perRing = Math.floor(n / rings.length);
   const cy = centerY(H, options);
 
@@ -33,7 +58,7 @@ export function buildHeartTargets(n, W, H, options) {
     for (let i = 0; i < count; i++) {
       const t = (i / count) * Math.PI * 2 + r * 0.08;
       const p = heartPoint(t, scale);
-      points.push(jitterPoint(W * 0.5 + p.x, cy + p.y, Math.min(W, H) * 0.01));
+      points.push(jitterPoint(W * 0.5 + p.x, cy + p.y, Math.min(W, H) * 0.008));
     }
   }
   return points;
@@ -44,13 +69,21 @@ function sampleGlyphTargets(glyphs, n, W, H, options) {
   const oc = off.getContext('2d', { willReadFrequently: true });
   const single = glyphs.length === 1;
   const isMusic = single && (glyphs[0] === '♫' || glyphs[0] === '♪' || glyphs[0] === '♬');
-  const fontSize = Math.min(W, H) * (single
-    ? (isMusic
-      ? (options.isPhone ? 0.55 : 0.5)
-      : (options.isPhone ? 0.5 : 0.46))
-    : (options.isPhone ? 0.22 : 0.2));
+
+  // 手机：字号略小，避免盖住计时器、左右溢出
+  let fontRatio;
+  if (single) {
+    if (isMusic) {
+      fontRatio = options.isPhone ? 0.42 : 0.5;
+    } else {
+      fontRatio = options.isPhone ? 0.4 : 0.46;
+    }
+  } else {
+    fontRatio = options.isPhone ? 0.18 : 0.2;
+  }
+  const fontSize = Math.min(W, H) * fontRatio;
   off.width = Math.max(64, Math.floor(W));
-  off.height = Math.max(64, Math.floor(H * 0.6));
+  off.height = Math.max(64, Math.floor(H * (options.isPhone ? 0.5 : 0.6)));
 
   oc.clearRect(0, 0, off.width, off.height);
   oc.fillStyle = '#000';
@@ -61,7 +94,7 @@ function sampleGlyphTargets(glyphs, n, W, H, options) {
   oc.textAlign = 'center';
   oc.textBaseline = 'middle';
 
-  const gap = fontSize * (options.isPhone ? 1.05 : 1.2);
+  const gap = fontSize * (options.isPhone ? 1.0 : 1.2);
   const totalW = (glyphs.length - 1) * gap;
   const startX = off.width / 2 - totalW / 2;
   const midY = off.height / 2;
@@ -73,7 +106,7 @@ function sampleGlyphTargets(glyphs, n, W, H, options) {
 
   const { data, width, height } = oc.getImageData(0, 0, off.width, off.height);
   const pixels = [];
-  const step = Math.max(1, Math.floor(fontSize / (single ? 56 : 48)));
+  const step = Math.max(1, Math.floor(fontSize / (single ? (options.isPhone ? 48 : 56) : 48)));
   for (let y = 0; y < height; y += step) {
     for (let x = 0; x < width; x += step) {
       if (data[(y * width + x) * 4 + 3] > 16) {
@@ -93,9 +126,9 @@ function sampleGlyphTargets(glyphs, n, W, H, options) {
     pixels[j] = tmp;
   }
 
-  const offsetY = H * (options.isPhone ? 0.56 : 0.58);
+  const offsetY = H * (options.isPhone ? 0.6 : 0.58);
   const points = [];
-  const jitterScale = Math.max(0.6, step * 0.25);
+  const jitterScale = Math.max(0.5, step * 0.22);
   for (let i = 0; i < n; i++) {
     const p = pixels[i % pixels.length];
     points.push(jitterPoint(
@@ -117,47 +150,45 @@ export function buildNoteTargets(n, W, H, options) {
   return sampleGlyphTargets(symbols, n, W, H, options) || buildHeartTargets(n, W, H, options);
 }
 
-/** 浪漫：汇聚成「爱」 */
 export function buildRomanceTargets(n, W, H, options) {
   return sampleGlyphTargets(['爱'], n, W, H, options) || buildHeartTargets(n, W, H, options);
 }
 
 export function buildWaveTargets(n, W, H, options) {
-  const rows = options.isPhone ? 5 : 6;
+  const rows = options.isPhone ? 4 : 6;
   const perRow = Math.floor(n / rows);
   const points = [];
-  const top = H * (options.isPhone ? 0.38 : 0.36);
-  const span = H * (options.isPhone ? 0.42 : 0.44);
-  const amp = Math.min(W, H) * (options.isPhone ? 0.035 : 0.04);
+  const top = H * (options.isPhone ? 0.4 : 0.36);
+  const span = H * (options.isPhone ? 0.38 : 0.44);
+  const amp = Math.min(W, H) * (options.isPhone ? 0.028 : 0.04);
+  const marginX = options.isPhone ? 0.06 : 0.08;
 
   for (let r = 0; r < rows; r++) {
     const count = r === rows - 1 ? n - points.length : perRow;
-    const baseY = top + (span * r) / (rows - 1);
+    const baseY = top + (span * r) / Math.max(1, rows - 1);
     const phase = r * 0.9;
-    const freq = 2.2 + r * 0.15;
+    const freq = 2.0 + r * 0.15;
     for (let i = 0; i < count; i++) {
       const t = i / Math.max(1, count - 1);
-      const x = W * 0.08 + t * W * 0.84;
+      const x = W * marginX + t * W * (1 - marginX * 2);
       const y = baseY + Math.sin(t * Math.PI * freq + phase) * amp;
-      points.push(jitterPoint(x, y, 4));
+      points.push(jitterPoint(x, y, 3));
     }
   }
   return points;
 }
 
-/** 方形：多层方框 */
 export function buildSquareTargets(n, W, H, options) {
   const cx = W * 0.5;
   const cy = centerY(H, options);
-  const half = Math.min(W, H) * (options.isPhone ? 0.22 : 0.2);
-  const rings = [1, 0.78, 0.56, 0.34];
+  const half = Math.min(W, H) * (options.isPhone ? 0.2 : 0.2);
+  const rings = options.isPhone ? [1, 0.72, 0.46] : [1, 0.78, 0.56, 0.34];
   const points = [];
   const perRing = Math.floor(n / rings.length);
 
   for (let r = 0; r < rings.length; r++) {
     const count = r === rings.length - 1 ? n - points.length : perRing;
     const s = half * rings[r];
-    // 周长按边分配
     for (let i = 0; i < count; i++) {
       const t = i / count;
       const edge = Math.floor(t * 4) % 4;
@@ -177,19 +208,18 @@ export function buildSquareTargets(n, W, H, options) {
         x = cx - s;
         y = cy + s - u * 2 * s;
       }
-      points.push(jitterPoint(x, y, 3));
+      points.push(jitterPoint(x, y, 2));
     }
   }
   return points;
 }
 
-/** 菱形 */
 export function buildDiamondTargets(n, W, H, options) {
   const cx = W * 0.5;
   const cy = centerY(H, options);
-  const rx = Math.min(W, H) * (options.isPhone ? 0.28 : 0.26);
-  const ry = Math.min(W, H) * (options.isPhone ? 0.34 : 0.32);
-  const rings = [1, 0.75, 0.5, 0.28];
+  const rx = Math.min(W, H) * (options.isPhone ? 0.24 : 0.26);
+  const ry = Math.min(W, H) * (options.isPhone ? 0.28 : 0.32);
+  const rings = options.isPhone ? [1, 0.7, 0.42] : [1, 0.75, 0.5, 0.28];
   const points = [];
   const perRing = Math.floor(n / rings.length);
 
@@ -216,23 +246,21 @@ export function buildDiamondTargets(n, W, H, options) {
         x = cx + u * sx;
         y = cy + (1 - u) * sy;
       }
-      points.push(jitterPoint(x, y, 3));
+      points.push(jitterPoint(x, y, 2));
     }
   }
   return points;
 }
 
-/** 气泡：多个圆圈轮廓 */
 export function buildBubblesTargets(n, W, H, options) {
   const cy = centerY(H, options);
   const circles = options.isPhone
     ? [
-        { x: 0.5, y: 0.0, r: 0.16 },
-        { x: 0.28, y: 0.08, r: 0.1 },
-        { x: 0.72, y: 0.06, r: 0.11 },
-        { x: 0.38, y: -0.14, r: 0.08 },
-        { x: 0.64, y: -0.12, r: 0.09 },
-        { x: 0.5, y: 0.18, r: 0.07 },
+        { x: 0.5, y: 0.0, r: 0.14 },
+        { x: 0.3, y: 0.06, r: 0.09 },
+        { x: 0.7, y: 0.05, r: 0.1 },
+        { x: 0.4, y: -0.12, r: 0.07 },
+        { x: 0.62, y: -0.1, r: 0.08 },
       ]
     : [
         { x: 0.5, y: 0.0, r: 0.15 },
@@ -249,9 +277,9 @@ export function buildBubblesTargets(n, W, H, options) {
   const base = Math.min(W, H);
   for (const c of circles) {
     const cx = W * c.x;
-    const yy = cy + H * c.y * 0.35;
+    const yy = cy + H * c.y * (options.isPhone ? 0.28 : 0.35);
     const radius = base * c.r;
-    const steps = Math.max(18, Math.floor(radius * 1.2));
+    const steps = Math.max(14, Math.floor(radius * (options.isPhone ? 1.0 : 1.2)));
     for (let i = 0; i < steps; i++) {
       const a = (i / steps) * Math.PI * 2;
       pool.push({
@@ -264,64 +292,62 @@ export function buildBubblesTargets(n, W, H, options) {
   const points = [];
   for (let i = 0; i < n; i++) {
     const p = pool[i % pool.length];
-    points.push(jitterPoint(p.x, p.y, 4));
+    points.push(jitterPoint(p.x, p.y, 3));
   }
   return points;
 }
 
-/** 冒泡：自下而上的圆泡串 */
 export function buildRisingTargets(n, W, H, options) {
-  const cols = options.isPhone ? 5 : 7;
+  const cols = options.isPhone ? 4 : 7;
   const perCol = Math.floor(n / cols);
   const points = [];
-  const top = H * 0.34;
-  const bottom = H * 0.82;
+  const top = H * (options.isPhone ? 0.38 : 0.34);
+  const bottom = H * (options.isPhone ? 0.86 : 0.82);
   const base = Math.min(W, H);
+  const side = options.isPhone ? 0.16 : 0.18;
+  const span = 1 - side * 2;
 
   for (let c = 0; c < cols; c++) {
     const count = c === cols - 1 ? n - points.length : perCol;
-    const x = W * (0.18 + (0.64 * c) / Math.max(1, cols - 1));
+    const x = W * (side + (span * c) / Math.max(1, cols - 1));
     for (let i = 0; i < count; i++) {
       const t = i / Math.max(1, count - 1);
-      // 越往上泡越大、略漂移
       const y = bottom + (top - bottom) * t;
-      const wobble = Math.sin(t * Math.PI * 3 + c) * base * 0.02;
+      const wobble = Math.sin(t * Math.PI * 3 + c) * base * 0.015;
       const ring = ((i + c) % 5) / 5;
-      const radius = base * (0.012 + ring * 0.03);
+      const radius = base * (0.01 + ring * 0.025);
       const a = (i / count) * Math.PI * 2;
       points.push(jitterPoint(
         x + wobble + Math.cos(a) * radius,
-        y + Math.sin(a) * radius * 0.6,
-        3,
+        y + Math.sin(a) * radius * 0.55,
+        2,
       ));
     }
   }
   return points;
 }
 
-/** 螺旋 */
 export function buildSpiralTargets(n, W, H, options) {
   const cx = W * 0.5;
   const cy = centerY(H, options);
-  const maxR = Math.min(W, H) * (options.isPhone ? 0.3 : 0.28);
-  const turns = 3.2;
+  const maxR = Math.min(W, H) * (options.isPhone ? 0.26 : 0.28);
+  const turns = options.isPhone ? 2.8 : 3.2;
   const points = [];
   for (let i = 0; i < n; i++) {
     const t = i / n;
     const a = t * Math.PI * 2 * turns;
     const r = maxR * t;
-    points.push(jitterPoint(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 3));
+    points.push(jitterPoint(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 2));
   }
   return points;
 }
 
-/** 五角星 */
 export function buildStarTargets(n, W, H, options) {
   const cx = W * 0.5;
   const cy = centerY(H, options);
-  const outer = Math.min(W, H) * (options.isPhone ? 0.28 : 0.26);
+  const outer = Math.min(W, H) * (options.isPhone ? 0.24 : 0.26);
   const inner = outer * 0.42;
-  const rings = [1, 0.72, 0.48];
+  const rings = options.isPhone ? [1, 0.68] : [1, 0.72, 0.48];
   const points = [];
   const perRing = Math.floor(n / rings.length);
 
@@ -331,7 +357,6 @@ export function buildStarTargets(n, W, H, options) {
     const inn = inner * rings[r];
     for (let i = 0; i < count; i++) {
       const t = i / count;
-      // 10 段折线（星形周长）
       const seg = Math.floor(t * 10) % 10;
       const u = (t * 10) % 1;
       const a0 = (-Math.PI / 2) + (seg * Math.PI) / 5;
@@ -342,7 +367,7 @@ export function buildStarTargets(n, W, H, options) {
       const y0 = cy + Math.sin(a0) * r0;
       const x1 = cx + Math.cos(a1) * r1;
       const y1 = cy + Math.sin(a1) * r1;
-      points.push(jitterPoint(x0 + (x1 - x0) * u, y0 + (y1 - y0) * u, 3));
+      points.push(jitterPoint(x0 + (x1 - x0) * u, y0 + (y1 - y0) * u, 2));
     }
   }
   return points;
@@ -362,7 +387,6 @@ export const EFFECT_BUILDERS = {
   star: buildStarTargets,
 };
 
-/** 自动轮播顺序 */
 export const EFFECT_ORDER = [
   'heart',
   'name',

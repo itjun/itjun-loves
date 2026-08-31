@@ -107,31 +107,33 @@ body {
   font-family: 'ZCOOL XiaoWei', 'Songti SC', serif;
 }
 
-/* 手机竖屏：UI 更紧凑 */
-@media (max-width: 768px) and (max-aspect-ratio: 3/4) {
+/* 手机：统一窄屏适配（不依赖横竖屏比例） */
+@media (max-width: 768px) {
   #ui {
-    padding-top: max(24px, env(safe-area-inset-top));
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-left: 12px;
+    padding-right: 12px;
   }
 
   #love-words {
-    font-size: clamp(16px, 4.2vw, 20px);
-    letter-spacing: 0.16em;
-    text-indent: 0.16em;
-    margin-bottom: 10px;
+    font-size: clamp(15px, 4vw, 19px);
+    letter-spacing: 0.14em;
+    text-indent: 0.14em;
+    margin-bottom: 8px;
   }
 
   #timer-days {
-    font-size: clamp(48px, 14vw, 84px);
+    font-size: clamp(44px, 13vw, 76px);
   }
 
   #timer-hms {
-    font-size: clamp(16px, 4.4vw, 22px);
+    font-size: clamp(15px, 4.2vw, 20px);
   }
 
   #since {
-    font-size: 12px;
-    letter-spacing: 0.32em;
-    text-indent: 0.32em;
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-indent: 0.28em;
   }
 }
 

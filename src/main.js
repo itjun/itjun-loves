@@ -8,7 +8,7 @@ import {
   BUBBLE_PHRASES,
   BUBBLE_COLORS,
 } from './config.js';
-import { EFFECT_BUILDERS, EFFECT_ORDER } from './shapes.js';
+import { EFFECT_BUILDERS, EFFECT_ORDER, clampTargets } from './shapes.js';
 import './timer.js';
 
 document.getElementById('love-words').textContent = LOVE_WORDS;
@@ -31,6 +31,9 @@ const TIMING = {
   wait: 0.5,
 };
 
+/** 手机用更短文案，气泡更窄，形状更清晰 */
+const PHONE_PHRASES = BUBBLE_PHRASES.filter((p) => p.length <= 4);
+
 let dpr = 1;
 let W = 0;
 let H = 0;
@@ -41,6 +44,8 @@ let bubblePadX = 18;
 let bubbleH = 28;
 let heartScale = 0.022;
 let heartCenterY = 0.55;
+let trailChance = 0.4;
+let trailMax = 6;
 let effectIndex = 0;
 let currentEffect = EFFECT_ORDER[0];
 let bubbles = [];
@@ -53,27 +58,37 @@ function setPhase(next, now) {
   phaseStart = now;
 }
 
+function detectPhone() {
+  // 窄屏，或竖屏手机/平板
+  return W < 768 || (W <= 1024 && W / H < 0.85);
+}
+
 function isGlyphEffect() {
   return currentEffect === 'name' || currentEffect === 'note' || currentEffect === 'romance';
 }
 
 function layoutConfig() {
-  isPhone = W < 768 || W / H < 0.85;
+  isPhone = detectPhone();
   const glyph = isGlyphEffect();
   if (isPhone) {
-    bubbleCount = glyph ? 320 : 220;
-    bubbleFont = glyph ? 12 : 13;
-    bubblePadX = glyph ? 8 : 16;
-    bubbleH = glyph ? 20 : 28;
-    heartScale = 0.022;
-    heartCenterY = 0.56;
+    // 降数量保帧率，字形效果略多一点
+    bubbleCount = glyph ? 180 : 140;
+    bubbleFont = glyph ? 11 : 11;
+    bubblePadX = glyph ? 8 : 12;
+    bubbleH = glyph ? 18 : 22;
+    heartScale = 0.026;
+    heartCenterY = 0.6;
+    trailChance = 0.18;
+    trailMax = 3;
   } else {
-    bubbleCount = glyph ? 460 : 340;
+    bubbleCount = glyph ? 420 : 320;
     bubbleFont = glyph ? 13 : 15;
     bubblePadX = glyph ? 10 : 20;
     bubbleH = glyph ? 22 : 32;
     heartScale = 0.028;
     heartCenterY = 0.58;
+    trailChance = 0.4;
+    trailMax = 6;
   }
 }
 
@@ -102,18 +117,20 @@ function measureBubble(text) {
 }
 
 function randomInView() {
+  const top = isPhone ? 0.32 : 0.22;
+  const span = isPhone ? 0.52 : 0.62;
   return {
-    x: Math.random() * W,
-    y: H * (isPhone ? 0.28 : 0.22) + Math.random() * H * (isPhone ? 0.55 : 0.62),
+    x: W * 0.04 + Math.random() * W * 0.92,
+    y: H * top + Math.random() * H * span,
   };
 }
 
 function randomExplodePoint() {
   const angle = Math.random() * Math.PI * 2;
-  const dist = Math.max(W, H) * (0.55 + Math.random() * 0.75);
+  const dist = Math.max(W, H) * (isPhone ? 0.7 : 0.55 + Math.random() * 0.75);
   return {
     x: W * 0.5 + Math.cos(angle) * dist,
-    y: H * 0.55 + Math.sin(angle) * dist,
+    y: H * 0.58 + Math.sin(angle) * dist,
   };
 }
 
@@ -124,15 +141,16 @@ function bubbleTextForIndex(i) {
   if (currentEffect === 'note') {
     return i % 3 === 0 ? NOTE_SYMBOLS[i % NOTE_SYMBOLS.length] : '♫';
   }
+  const pool = isPhone ? PHONE_PHRASES : BUBBLE_PHRASES;
   if (currentEffect === 'romance') {
-    return i % 4 === 0 ? '爱' : BUBBLE_PHRASES[i % BUBBLE_PHRASES.length];
+    return i % 4 === 0 ? '爱' : pool[i % pool.length];
   }
-  return BUBBLE_PHRASES[i % BUBBLE_PHRASES.length];
+  return pool[i % pool.length];
 }
 
 function createBubbles() {
   layoutConfig();
-  const targets = buildTargets(bubbleCount);
+  const targets = clampTargets(buildTargets(bubbleCount), W, H, isPhone);
   bubbles = [];
   for (let i = 0; i < bubbleCount; i++) {
     const text = bubbleTextForIndex(i);
@@ -152,7 +170,7 @@ function createBubbles() {
       hy: targets[i].y,
       ex: 0,
       ey: 0,
-      rot: (Math.random() - 0.5) * 0.3,
+      rot: (Math.random() - 0.5) * (isPhone ? 0.2 : 0.3),
       delay: Math.random() * 0.35,
       trail: [],
     });
@@ -162,9 +180,12 @@ function createBubbles() {
 function applyCanvasSize() {
   const app = document.getElementById('app');
   const rect = app.getBoundingClientRect();
+  const vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+  const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  W = Math.max(1, Math.floor(rect.width || vw));
+  H = Math.max(1, Math.floor(rect.height || vh));
+  isPhone = detectPhone();
   dpr = Math.min(window.devicePixelRatio || 1, 2);
-  W = Math.max(1, Math.floor(rect.width || window.innerWidth));
-  H = Math.max(1, Math.floor(rect.height || window.innerHeight));
   canvas.width = Math.floor(W * dpr);
   canvas.height = Math.floor(H * dpr);
   canvas.style.width = `${W}px`;
@@ -283,9 +304,9 @@ function update(now) {
       const k = easeInOutCubic(local);
       b.x = b.sx + (b.hx - b.sx) * k;
       b.y = b.sy + (b.hy - b.sy) * k;
-      if (local > 0.05 && local < 0.95 && Math.random() < 0.4) {
+      if (local > 0.05 && local < 0.95 && Math.random() < trailChance) {
         b.trail.push({ x: b.x, y: b.y });
-        if (b.trail.length > 6) {
+        if (b.trail.length > trailMax) {
           b.trail.shift();
         }
       }
@@ -358,8 +379,12 @@ function frame(now) {
 window.addEventListener('resize', onResize);
 window.addEventListener('orientationchange', () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => resize(true), 260);
+  resizeTimer = setTimeout(() => resize(true), 280);
 });
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', onResize);
+}
 
 resize(true);
 requestAnimationFrame(frame);
