@@ -1,0 +1,18 @@
+{
+  "name": "itjun-loves",
+  "private": true,
+  "version": "1.0.0",
+  "description": "海边结婚纪念日表白网站",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}
