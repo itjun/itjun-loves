@@ -63,17 +63,17 @@ function layoutConfig() {
   isPhone = W < 768 || W / H < 0.85;
   const compact = isCompactEffect();
   if (isPhone) {
-    bubbleCount = currentEffect === 'name' ? 320 : compact ? 260 : 200;
-    bubbleFont = currentEffect === 'name' ? 11 : compact ? 12 : 13;
-    bubblePadX = currentEffect === 'name' ? 8 : compact ? 10 : 18;
-    bubbleH = currentEffect === 'name' ? 20 : compact ? 22 : 28;
+    bubbleCount = currentEffect === 'name' ? 320 : currentEffect === 'note' ? 300 : 200;
+    bubbleFont = currentEffect === 'name' || currentEffect === 'note' ? 12 : 13;
+    bubblePadX = currentEffect === 'name' || currentEffect === 'note' ? 8 : 18;
+    bubbleH = currentEffect === 'name' || currentEffect === 'note' ? 20 : 28;
     heartScale = 0.022;
     heartCenterY = 0.56;
   } else {
-    bubbleCount = currentEffect === 'name' ? 480 : compact ? 380 : 320;
-    bubbleFont = currentEffect === 'name' ? 12 : compact ? 14 : 15;
-    bubblePadX = currentEffect === 'name' ? 10 : compact ? 12 : 22;
-    bubbleH = currentEffect === 'name' ? 22 : compact ? 24 : 32;
+    bubbleCount = currentEffect === 'name' ? 480 : currentEffect === 'note' ? 420 : 320;
+    bubbleFont = currentEffect === 'name' || currentEffect === 'note' ? 13 : 15;
+    bubblePadX = currentEffect === 'name' || currentEffect === 'note' ? 10 : 22;
+    bubbleH = currentEffect === 'name' || currentEffect === 'note' ? 22 : 32;
     heartScale = 0.028;
     heartCenterY = 0.58;
   }
@@ -125,7 +125,8 @@ function bubbleTextForIndex(i) {
     return NAME_TEXT;
   }
   if (currentEffect === 'note') {
-    return NOTE_SYMBOLS[i % NOTE_SYMBOLS.length];
+    // 以 ♫ 为主，偶尔夹杂其他音符
+    return i % 3 === 0 ? NOTE_SYMBOLS[i % NOTE_SYMBOLS.length] : '♫';
   }
   return BUBBLE_PHRASES[i % BUBBLE_PHRASES.length];
 }

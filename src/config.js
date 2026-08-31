@@ -8,10 +8,10 @@ export const SINCE_TEXT = 'SINCE 2020.01.13';
 export const NAME_TEXT = '兰';
 
 /** 音符效果：气泡内显示的音乐符号 */
-export const NOTE_SYMBOLS = ['♪', '♫', '♬', '♩', '♭', '♯'];
+export const NOTE_SYMBOLS = ['♫', '♪', '♬', '♩'];
 
-/** 音符效果：大轮廓采样用的符号 */
-export const NOTE_SHAPE_SYMBOLS = ['♪', '♫', '♬'];
+/** 音符效果：大轮廓只汇聚成 ♫ */
+export const NOTE_SHAPE_SYMBOLS = ['♫'];
 
 export const BUBBLE_PHRASES = [
   '好好吃饭',

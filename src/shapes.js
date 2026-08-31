@@ -36,8 +36,12 @@ function sampleGlyphTargets(glyphs, n, W, H, options) {
   const off = document.createElement('canvas');
   const oc = off.getContext('2d', { willReadFrequently: true });
   const single = glyphs.length === 1;
+  // 单字「兰」/「♫」用更大字号，轮廓更清楚
+  const isMusic = single && (glyphs[0] === '♫' || glyphs[0] === '♪' || glyphs[0] === '♬');
   const fontSize = Math.min(W, H) * (single
-    ? (options.isPhone ? 0.5 : 0.46)
+    ? (isMusic
+      ? (options.isPhone ? 0.55 : 0.5)
+      : (options.isPhone ? 0.5 : 0.46))
     : (options.isPhone ? 0.22 : 0.2));
   off.width = Math.max(64, Math.floor(W));
   off.height = Math.max(64, Math.floor(H * 0.6));
@@ -108,13 +112,10 @@ export function buildNameTargets(n, W, H, options) {
   return points;
 }
 
-/** 音乐符号轮廓：♪ ♫ ♬ */
+/** 音乐符号轮廓：大型 ♫ */
 export function buildNoteTargets(n, W, H, options) {
-  const symbols = options.noteShapeSymbols || ['♪', '♫', '♬'];
-  const points = sampleGlyphTargets(symbols, n, W, H, {
-    ...options,
-    isPhone: options.isPhone,
-  });
+  const symbols = options.noteShapeSymbols || ['♫'];
+  const points = sampleGlyphTargets(symbols, n, W, H, options);
   if (!points) {
     return buildHeartTargets(n, W, H, options);
   }
