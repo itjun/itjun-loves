@@ -2,9 +2,11 @@ import './style.css';
 import {
   LOVE_WORDS,
   SINCE_TEXT,
+  NAME_TEXT,
   BUBBLE_PHRASES,
   BUBBLE_COLORS,
 } from './config.js';
+import { EFFECT_BUILDERS } from './shapes.js';
 import './timer.js';
 
 document.getElementById('love-words').textContent = LOVE_WORDS;
@@ -13,6 +15,7 @@ document.getElementById('since').textContent = SINCE_TEXT;
 const canvas = document.getElementById('stage');
 const ctx = canvas.getContext('2d');
 const hint = document.getElementById('hint');
+const effectsEl = document.getElementById('effects');
 
 const PHASE = {
   SCATTER: 0,
@@ -32,6 +35,7 @@ let bubblePadX = 18;
 let bubbleH = 28;
 let heartScale = 0.022;
 let heartCenterY = 0.55;
+let currentEffect = 'heart';
 let bubbles = [];
 let phase = PHASE.SCATTER;
 let phaseStart = 0;
@@ -44,7 +48,6 @@ function setPhase(next, now) {
 }
 
 function layoutConfig() {
-  // 手机：窄屏或竖屏；PC：宽屏横屏
   isPhone = W < 768 || W / H < 0.85;
   if (isPhone) {
     bubbleCount = 200;
@@ -65,32 +68,18 @@ function layoutConfig() {
   }
 }
 
-function heartPoint(t, scale) {
-  const x = 16 * Math.pow(Math.sin(t), 3);
-  const y =
-    -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-  return { x: x * scale, y: y * scale };
+function shapeOptions() {
+  return {
+    isPhone,
+    heartScale,
+    heartCenterY,
+    nameText: NAME_TEXT,
+  };
 }
 
-function buildHeartTargets(n) {
-  const points = [];
-  const base = Math.min(W, H) * heartScale;
-  const rings = [1.0, 0.88, 0.76, 0.64, 0.52];
-  const perRing = Math.floor(n / rings.length);
-  for (let r = 0; r < rings.length; r++) {
-    const scale = base * rings[r];
-    const count = r === rings.length - 1 ? n - points.length : perRing;
-    for (let i = 0; i < count; i++) {
-      const t = (i / count) * Math.PI * 2 + r * 0.08;
-      const p = heartPoint(t, scale);
-      const jitter = (Math.random() - 0.5) * Math.min(W, H) * 0.01;
-      points.push({
-        x: W * 0.5 + p.x + jitter,
-        y: H * heartCenterY + p.y + jitter,
-      });
-    }
-  }
-  return points;
+function buildTargets(n) {
+  const builder = EFFECT_BUILDERS[currentEffect] || EFFECT_BUILDERS.heart;
+  return builder(n, W, H, shapeOptions());
 }
 
 function measureBubble(text) {
@@ -104,7 +93,7 @@ function measureBubble(text) {
 
 function createBubbles() {
   layoutConfig();
-  const targets = buildHeartTargets(bubbleCount);
+  const targets = buildTargets(bubbleCount);
   bubbles = [];
   for (let i = 0; i < bubbleCount; i++) {
     const text = BUBBLE_PHRASES[i % BUBBLE_PHRASES.length];
@@ -183,6 +172,22 @@ function restart() {
     b.y = b.sy;
     b.trail = [];
   }
+}
+
+function switchEffect(effect) {
+  if (!EFFECT_BUILDERS[effect] || effect === currentEffect) {
+    if (effect === currentEffect) {
+      createBubbles();
+      restart();
+    }
+    return;
+  }
+  currentEffect = effect;
+  for (const btn of effectsEl.querySelectorAll('.effect-btn')) {
+    btn.classList.toggle('active', btn.dataset.effect === effect);
+  }
+  createBubbles();
+  restart();
 }
 
 function drawBubble(b, alpha) {
@@ -312,13 +317,25 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 
+effectsEl.addEventListener('pointerdown', (e) => {
+  e.stopPropagation();
+  const btn = e.target.closest('.effect-btn');
+  if (!btn) {
+    return;
+  }
+  switchEffect(btn.dataset.effect);
+});
+
 window.addEventListener('resize', onResize);
 window.addEventListener('orientationchange', () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => resize(true), 260);
 });
 
-window.addEventListener('pointerdown', () => {
+window.addEventListener('pointerdown', (e) => {
+  if (e.target.closest('#effects')) {
+    return;
+  }
   if (phase === PHASE.DONE || phase === PHASE.EXPLODE) {
     createBubbles();
     restart();

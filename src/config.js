@@ -4,6 +4,9 @@ export const LOVE_WORDS = '山川湖海，不及你回眸一笑';
 
 export const SINCE_TEXT = 'SINCE 2020.01.13';
 
+/** 名字效果汇聚文字 */
+export const NAME_TEXT = '周桂兰';
+
 export const BUBBLE_PHRASES = [
   '好好吃饭',
   '想你啦',
