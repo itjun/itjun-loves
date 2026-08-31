@@ -14,8 +14,6 @@ const canvas = document.getElementById('stage');
 const ctx = canvas.getContext('2d');
 const hint = document.getElementById('hint');
 
-const COUNT = 220;
-
 const PHASE = {
   SCATTER: 0,
   GATHER: 1,
@@ -27,16 +25,44 @@ const PHASE = {
 let dpr = 1;
 let W = 0;
 let H = 0;
+let isPhone = false;
+let bubbleCount = 220;
+let bubbleFont = 13;
+let bubblePadX = 18;
+let bubbleH = 28;
+let heartScale = 0.022;
+let heartCenterY = 0.55;
 let bubbles = [];
 let phase = PHASE.SCATTER;
 let phaseStart = 0;
 let running = true;
-window.__lovePhases = [];
+let resizeTimer = null;
 
 function setPhase(next, now) {
   phase = next;
   phaseStart = now;
-  window.__lovePhases.push({ phase: next, t: Math.round(performance.now()) });
+}
+
+function layoutConfig() {
+  // 手机：窄屏或竖屏；PC：宽屏横屏
+  isPhone = W < 768 || W / H < 0.85;
+  if (isPhone) {
+    bubbleCount = 200;
+    bubbleFont = 13;
+    bubblePadX = 18;
+    bubbleH = 28;
+    heartScale = 0.022;
+    heartCenterY = 0.56;
+    hint.textContent = '轻触屏幕，再看一次';
+  } else {
+    bubbleCount = 320;
+    bubbleFont = 15;
+    bubblePadX = 22;
+    bubbleH = 32;
+    heartScale = 0.028;
+    heartCenterY = 0.58;
+    hint.textContent = '点击屏幕，再看一次';
+  }
 }
 
 function heartPoint(t, scale) {
@@ -48,8 +74,7 @@ function heartPoint(t, scale) {
 
 function buildHeartTargets(n) {
   const points = [];
-  const base = Math.min(W, H) * 0.022;
-  // 多层同心爱心，做出参考图那种「厚度 + 拖尾」感
+  const base = Math.min(W, H) * heartScale;
   const rings = [1.0, 0.88, 0.76, 0.64, 0.52];
   const perRing = Math.floor(n / rings.length);
   for (let r = 0; r < rings.length; r++) {
@@ -61,7 +86,7 @@ function buildHeartTargets(n) {
       const jitter = (Math.random() - 0.5) * Math.min(W, H) * 0.01;
       points.push({
         x: W * 0.5 + p.x + jitter,
-        y: H * 0.55 + p.y + jitter,
+        y: H * heartCenterY + p.y + jitter,
       });
     }
   }
@@ -69,23 +94,24 @@ function buildHeartTargets(n) {
 }
 
 function measureBubble(text) {
-  ctx.font = '600 13px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
+  ctx.font = `600 ${bubbleFont}px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif`;
   const tw = ctx.measureText(text).width;
   return {
-    w: Math.ceil(tw + 18),
-    h: 28,
+    w: Math.ceil(tw + bubblePadX),
+    h: bubbleH,
   };
 }
 
 function createBubbles() {
-  const targets = buildHeartTargets(COUNT);
+  layoutConfig();
+  const targets = buildHeartTargets(bubbleCount);
   bubbles = [];
-  for (let i = 0; i < COUNT; i++) {
+  for (let i = 0; i < bubbleCount; i++) {
     const text = BUBBLE_PHRASES[i % BUBBLE_PHRASES.length];
     const color = BUBBLE_COLORS[i % BUBBLE_COLORS.length];
     const size = measureBubble(text);
     const startX = Math.random() * W;
-    const startY = H * 0.28 + Math.random() * H * 0.55;
+    const startY = H * (isPhone ? 0.28 : 0.22) + Math.random() * H * (isPhone ? 0.55 : 0.62);
     bubbles.push({
       text,
       color,
@@ -97,9 +123,8 @@ function createBubbles() {
       sy: startY,
       hx: targets[i].x,
       hy: targets[i].y,
-      // 爆炸目标：飞向屏幕四周外
-      ex: W * 0.5 + (Math.random() - 0.5) * W * 2.4,
-      ey: H * 0.5 + (Math.random() - 0.5) * H * 2.4,
+      ex: W * 0.5 + (Math.random() - 0.5) * W * 2.6,
+      ey: H * 0.5 + (Math.random() - 0.5) * H * 2.6,
       rot: (Math.random() - 0.5) * 0.35,
       delay: Math.random() * 0.35,
       trail: [],
@@ -107,7 +132,7 @@ function createBubbles() {
   }
 }
 
-function resize() {
+function applyCanvasSize() {
   const app = document.getElementById('app');
   const rect = app.getBoundingClientRect();
   dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -118,32 +143,27 @@ function resize() {
   canvas.style.width = `${W}px`;
   canvas.style.height = `${H}px`;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  createBubbles();
-  restart();
-  window.__bubbles = bubbles;
-  window.__loveDebug = () => {
-    let minX = Infinity;
-    let maxX = -Infinity;
-    let minY = Infinity;
-    let maxY = -Infinity;
-    for (const b of bubbles) {
-      minX = Math.min(minX, b.hx);
-      maxX = Math.max(maxX, b.hx);
-      minY = Math.min(minY, b.hy);
-      maxY = Math.max(maxY, b.hy);
-    }
-    return {
-      W,
-      H,
-      phase,
-      heartBox: {
-        minX: Math.round(minX),
-        maxX: Math.round(maxX),
-        minY: Math.round(minY),
-        maxY: Math.round(maxY),
-      },
-    };
-  };
+}
+
+function resize(forceRestart) {
+  const prevW = W;
+  const prevH = H;
+  applyCanvasSize();
+
+  const sizeChanged =
+    Math.abs(W - prevW) > 40 || Math.abs(H - prevH) > 40 || prevW === 0;
+
+  if (forceRestart || sizeChanged) {
+    createBubbles();
+    restart();
+  }
+}
+
+function onResize() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    resize(true);
+  }, 180);
 }
 
 function easeInOutCubic(t) {
@@ -171,7 +191,7 @@ function drawBubble(b, alpha) {
   ctx.rotate(b.rot);
   ctx.globalAlpha = alpha;
 
-  const r = 8;
+  const r = isPhone ? 8 : 10;
   const x = -b.w / 2;
   const y = -b.h / 2;
 
@@ -186,7 +206,7 @@ function drawBubble(b, alpha) {
   ctx.fill();
 
   ctx.fillStyle = '#222';
-  ctx.font = '600 13px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
+  ctx.font = `600 ${bubbleFont}px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(b.text, 0, 1);
@@ -254,7 +274,6 @@ function update(now) {
 function render() {
   ctx.clearRect(0, 0, W, H);
 
-  // 先画拖尾（更淡）
   if (phase === PHASE.GATHER) {
     for (const b of bubbles) {
       for (let i = 0; i < b.trail.length; i++) {
@@ -290,11 +309,15 @@ function loop(now) {
     update(now);
   }
   render();
-  window.__lovePhase = phase;
   requestAnimationFrame(loop);
 }
 
-window.addEventListener('resize', resize);
+window.addEventListener('resize', onResize);
+window.addEventListener('orientationchange', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => resize(true), 260);
+});
+
 window.addEventListener('pointerdown', () => {
   if (phase === PHASE.DONE || phase === PHASE.EXPLODE) {
     createBubbles();
@@ -302,5 +325,5 @@ window.addEventListener('pointerdown', () => {
   }
 });
 
-resize();
+resize(true);
 requestAnimationFrame(loop);

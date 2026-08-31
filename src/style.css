@@ -21,7 +21,7 @@ body {
   height: 100dvh;
   overflow: hidden;
   background:
-    radial-gradient(ellipse at 50% 20%, #1a2740 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 18%, #1a2740 0%, transparent 55%),
     linear-gradient(180deg, #0b1220 0%, #121a2c 55%, #0b1220 100%);
 }
 
@@ -51,15 +51,15 @@ body {
 }
 
 #love-words {
-  font-size: clamp(14px, 3.8vw, 18px);
-  letter-spacing: 0.22em;
-  text-indent: 0.22em;
+  font-size: clamp(14px, 2.2vw, 22px);
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
   color: rgba(234, 242, 255, 0.72);
-  margin-bottom: 12px;
+  margin-bottom: clamp(10px, 1.6vh, 18px);
 }
 
 #timer-days {
-  font-size: clamp(42px, 13vw, 72px);
+  font-size: clamp(42px, 8vw, 96px);
   font-weight: 600;
   line-height: 1.05;
   font-variant-numeric: tabular-nums;
@@ -74,9 +74,9 @@ body {
 }
 
 #timer-hms {
-  margin-top: 6px;
-  font-size: clamp(14px, 4vw, 20px);
-  letter-spacing: 0.08em;
+  margin-top: clamp(4px, 1vh, 10px);
+  font-size: clamp(14px, 2.4vw, 28px);
+  letter-spacing: 0.1em;
   font-variant-numeric: tabular-nums;
 }
 
@@ -91,10 +91,10 @@ body {
 }
 
 #since {
-  margin-top: 10px;
-  font-size: 11px;
-  letter-spacing: 0.4em;
-  text-indent: 0.4em;
+  margin-top: clamp(8px, 1.4vh, 16px);
+  font-size: clamp(11px, 1.2vw, 14px);
+  letter-spacing: 0.45em;
+  text-indent: 0.45em;
   color: rgba(234, 242, 255, 0.5);
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -106,7 +106,7 @@ body {
   bottom: max(18px, env(safe-area-inset-bottom));
   z-index: 2;
   text-align: center;
-  font-size: 12px;
+  font-size: clamp(12px, 1.2vw, 14px);
   letter-spacing: 0.28em;
   text-indent: 0.28em;
   color: rgba(234, 242, 255, 0.45);
@@ -120,11 +120,42 @@ body {
   opacity: 1;
 }
 
-/* 桌面浏览器也按手机竖屏比例居中显示 */
-@media (min-aspect-ratio: 3/4) {
-  #app {
-    width: min(430px, 100vw);
-    margin: 0 auto;
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+/* 手机竖屏：UI 更紧凑 */
+@media (max-width: 768px) and (max-aspect-ratio: 3/4) {
+  #ui {
+    padding-top: max(24px, env(safe-area-inset-top));
+  }
+
+  #love-words {
+    font-size: clamp(13px, 3.6vw, 17px);
+    letter-spacing: 0.2em;
+    text-indent: 0.2em;
+    margin-bottom: 10px;
+  }
+
+  #timer-days {
+    font-size: clamp(40px, 12vw, 72px);
+  }
+
+  #timer-hms {
+    font-size: clamp(13px, 3.8vw, 18px);
+  }
+
+  #since {
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    text-indent: 0.35em;
+  }
+}
+
+/* 宽屏桌面：顶部留白更大，爱心区域更开阔 */
+@media (min-width: 900px) {
+  #ui {
+    padding-top: clamp(36px, 6vh, 72px);
+  }
+
+  #love-words {
+    letter-spacing: 0.4em;
+    text-indent: 0.4em;
   }
 }
