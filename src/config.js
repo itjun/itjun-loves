@@ -5,7 +5,13 @@ export const LOVE_WORDS = '山川湖海，不及你回眸一笑';
 export const SINCE_TEXT = 'SINCE 2020.01.13';
 
 /** 名字效果汇聚文字 */
-export const NAME_TEXT = '周桂兰';
+export const NAME_TEXT = '兰';
+
+/** 音符效果：气泡内显示的音乐符号 */
+export const NOTE_SYMBOLS = ['♪', '♫', '♬', '♩', '♭', '♯'];
+
+/** 音符效果：大轮廓采样用的符号 */
+export const NOTE_SHAPE_SYMBOLS = ['♪', '♫', '♬'];
 
 export const BUBBLE_PHRASES = [
   '好好吃饭',

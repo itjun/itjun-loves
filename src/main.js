@@ -3,6 +3,8 @@ import {
   LOVE_WORDS,
   SINCE_TEXT,
   NAME_TEXT,
+  NOTE_SYMBOLS,
+  NOTE_SHAPE_SYMBOLS,
   BUBBLE_PHRASES,
   BUBBLE_COLORS,
 } from './config.js';
@@ -22,7 +24,6 @@ const PHASE = {
   GATHER: 1,
   HOLD: 2,
   EXPLODE: 3,
-  DONE: 4,
 };
 
 let dpr = 1;
@@ -39,7 +40,6 @@ let currentEffect = 'heart';
 let bubbles = [];
 let phase = PHASE.SCATTER;
 let phaseStart = 0;
-let running = true;
 let resizeTimer = null;
 
 function setPhase(next, now) {
@@ -47,25 +47,29 @@ function setPhase(next, now) {
   phaseStart = now;
 }
 
+function isCompactEffect() {
+  return currentEffect === 'name' || currentEffect === 'note';
+}
+
 function layoutConfig() {
   isPhone = W < 768 || W / H < 0.85;
+  const compact = isCompactEffect();
   if (isPhone) {
-    bubbleCount = 200;
-    bubbleFont = 13;
-    bubblePadX = 18;
-    bubbleH = 28;
+    bubbleCount = compact ? 280 : 200;
+    bubbleFont = compact ? 12 : 13;
+    bubblePadX = compact ? 10 : 18;
+    bubbleH = compact ? 22 : 28;
     heartScale = 0.022;
     heartCenterY = 0.56;
-    hint.textContent = '轻触屏幕，再看一次';
   } else {
-    bubbleCount = 320;
-    bubbleFont = 15;
-    bubblePadX = 22;
-    bubbleH = 32;
+    bubbleCount = compact ? 400 : 320;
+    bubbleFont = compact ? 14 : 15;
+    bubblePadX = compact ? 12 : 22;
+    bubbleH = compact ? 24 : 32;
     heartScale = 0.028;
     heartCenterY = 0.58;
-    hint.textContent = '点击屏幕，再看一次';
   }
+  hint.classList.remove('show');
 }
 
 function shapeOptions() {
@@ -74,6 +78,7 @@ function shapeOptions() {
     heartScale,
     heartCenterY,
     nameText: NAME_TEXT,
+    noteShapeSymbols: NOTE_SHAPE_SYMBOLS,
   };
 }
 
@@ -91,33 +96,59 @@ function measureBubble(text) {
   };
 }
 
+function randomScatterPoint() {
+  return {
+    x: Math.random() * W,
+    y: H * (isPhone ? 0.28 : 0.22) + Math.random() * H * (isPhone ? 0.55 : 0.62),
+  };
+}
+
+function bubbleTextForIndex(i) {
+  if (currentEffect === 'name') {
+    const chars = Array.from(NAME_TEXT);
+    return chars[i % chars.length];
+  }
+  if (currentEffect === 'note') {
+    return NOTE_SYMBOLS[i % NOTE_SYMBOLS.length];
+  }
+  return BUBBLE_PHRASES[i % BUBBLE_PHRASES.length];
+}
+
 function createBubbles() {
   layoutConfig();
   const targets = buildTargets(bubbleCount);
   bubbles = [];
   for (let i = 0; i < bubbleCount; i++) {
-    const text = BUBBLE_PHRASES[i % BUBBLE_PHRASES.length];
+    const text = bubbleTextForIndex(i);
     const color = BUBBLE_COLORS[i % BUBBLE_COLORS.length];
     const size = measureBubble(text);
-    const startX = Math.random() * W;
-    const startY = H * (isPhone ? 0.28 : 0.22) + Math.random() * H * (isPhone ? 0.55 : 0.62);
+    const start = randomScatterPoint();
     bubbles.push({
       text,
       color,
       w: size.w,
       h: size.h,
-      x: startX,
-      y: startY,
-      sx: startX,
-      sy: startY,
+      x: start.x,
+      y: start.y,
+      sx: start.x,
+      sy: start.y,
       hx: targets[i].x,
       hy: targets[i].y,
-      ex: W * 0.5 + (Math.random() - 0.5) * W * 2.6,
-      ey: H * 0.5 + (Math.random() - 0.5) * H * 2.6,
+      ex: 0,
+      ey: 0,
       rot: (Math.random() - 0.5) * 0.35,
       delay: Math.random() * 0.35,
       trail: [],
     });
+  }
+  assignExplodeTargets();
+}
+
+function assignExplodeTargets() {
+  for (const b of bubbles) {
+    const scatter = randomScatterPoint();
+    b.ex = scatter.x;
+    b.ey = scatter.y;
   }
 }
 
@@ -159,14 +190,9 @@ function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-function easeOutCubic(t) {
-  return 1 - Math.pow(1 - t, 3);
-}
-
 function restart() {
   setPhase(PHASE.SCATTER, performance.now());
   hint.classList.remove('show');
-  running = true;
   for (const b of bubbles) {
     b.x = b.sx;
     b.y = b.sy;
@@ -174,12 +200,24 @@ function restart() {
   }
 }
 
+/** 散开结束后：以当前位置为新起点，再次聚合 */
+function loopToGather(now) {
+  for (const b of bubbles) {
+    b.sx = b.x;
+    b.sy = b.y;
+    b.trail = [];
+    b.delay = Math.random() * 0.28;
+  }
+  setPhase(PHASE.GATHER, now);
+}
+
 function switchEffect(effect) {
-  if (!EFFECT_BUILDERS[effect] || effect === currentEffect) {
-    if (effect === currentEffect) {
-      createBubbles();
-      restart();
-    }
+  if (!EFFECT_BUILDERS[effect]) {
+    return;
+  }
+  if (effect === currentEffect) {
+    createBubbles();
+    restart();
     return;
   }
   currentEffect = effect;
@@ -223,11 +261,11 @@ function update(now) {
   const elapsed = (now - phaseStart) / 1000;
 
   if (phase === PHASE.SCATTER) {
-    if (elapsed > 1.0) {
+    if (elapsed > 0.8) {
       setPhase(PHASE.GATHER, now);
     }
   } else if (phase === PHASE.GATHER) {
-    const duration = 3.2;
+    const duration = 3.0;
     for (const b of bubbles) {
       const local = Math.min(1, Math.max(0, (elapsed - b.delay) / duration));
       const k = easeInOutCubic(local);
@@ -240,7 +278,7 @@ function update(now) {
         }
       }
     }
-    if (elapsed > duration + 0.35) {
+    if (elapsed > duration + 0.3) {
       for (const b of bubbles) {
         b.x = b.hx;
         b.y = b.hy;
@@ -254,24 +292,26 @@ function update(now) {
       b.x = b.hx + Math.sin(elapsed * 1.5 + b.delay * 6) * 0.6;
       b.y = b.hy + breath * 0.2;
     }
-    if (elapsed > 3.2) {
+    if (elapsed > 2.4) {
+      assignExplodeTargets();
       for (const b of bubbles) {
         b.sx = b.x;
         b.sy = b.y;
+        b.delay = Math.random() * 0.25;
       }
       setPhase(PHASE.EXPLODE, now);
     }
   } else if (phase === PHASE.EXPLODE) {
-    const duration = 1.8;
+    const duration = 1.6;
     for (const b of bubbles) {
-      const local = Math.min(1, Math.max(0, (elapsed - b.delay * 0.35) / duration));
-      const k = easeOutCubic(local);
+      const local = Math.min(1, Math.max(0, (elapsed - b.delay) / duration));
+      const k = easeInOutCubic(local);
       b.x = b.sx + (b.ex - b.sx) * k;
       b.y = b.sy + (b.ey - b.sy) * k;
     }
-    if (elapsed > duration + 0.35) {
-      setPhase(PHASE.DONE, now);
-      hint.classList.add('show');
+    if (elapsed > duration + 0.25) {
+      // 散开后立即再聚合，所有效果无限循环
+      loopToGather(now);
     }
   }
 }
@@ -296,23 +336,12 @@ function render() {
   }
 
   for (const b of bubbles) {
-    let alpha = 1;
-    if (phase === PHASE.EXPLODE) {
-      const dx = b.x - W * 0.5;
-      const dy = b.y - H * 0.5;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      alpha = Math.max(0.15, 1 - dist / (Math.max(W, H) * 1.2));
-    } else if (phase === PHASE.DONE) {
-      alpha = 0.2;
-    }
-    drawBubble(b, alpha);
+    drawBubble(b, 1);
   }
 }
 
 function loop(now) {
-  if (running) {
-    update(now);
-  }
+  update(now);
   render();
   requestAnimationFrame(loop);
 }
@@ -330,16 +359,6 @@ window.addEventListener('resize', onResize);
 window.addEventListener('orientationchange', () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => resize(true), 260);
-});
-
-window.addEventListener('pointerdown', (e) => {
-  if (e.target.closest('#effects')) {
-    return;
-  }
-  if (phase === PHASE.DONE || phase === PHASE.EXPLODE) {
-    createBubbles();
-    restart();
-  }
 });
 
 resize(true);

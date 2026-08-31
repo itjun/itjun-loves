@@ -32,38 +32,45 @@ export function buildHeartTargets(n, W, H, options) {
   return points;
 }
 
-/** 从离屏文字像素采样，形成名字轮廓 */
-export function buildNameTargets(n, W, H, options) {
-  const text = options.nameText || '周桂兰';
+function sampleGlyphTargets(glyphs, n, W, H, options) {
   const off = document.createElement('canvas');
-  const oc = off.getContext('2d');
-  const fontSize = Math.min(W, H) * (options.isPhone ? 0.22 : 0.18);
+  const oc = off.getContext('2d', { willReadFrequently: true });
+  const single = glyphs.length === 1;
+  const fontSize = Math.min(W, H) * (single
+    ? (options.isPhone ? 0.42 : 0.36)
+    : (options.isPhone ? 0.22 : 0.2));
   off.width = Math.max(64, Math.floor(W));
   off.height = Math.max(64, Math.floor(H * 0.55));
 
   oc.clearRect(0, 0, off.width, off.height);
   oc.fillStyle = '#000';
-  oc.font = `700 ${fontSize}px "PingFang SC", "Hiragino Sans GB", "Songti SC", serif`;
+  oc.font = `900 ${fontSize}px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Songti SC", sans-serif`;
   oc.textAlign = 'center';
   oc.textBaseline = 'middle';
-  oc.fillText(text, off.width / 2, off.height / 2);
+
+  const gap = fontSize * (options.isPhone ? 1.05 : 1.2);
+  const totalW = (glyphs.length - 1) * gap;
+  const startX = off.width / 2 - totalW / 2;
+  const midY = off.height / 2;
+  for (let i = 0; i < glyphs.length; i++) {
+    oc.fillText(glyphs[i], startX + i * gap, midY);
+  }
 
   const { data, width, height } = oc.getImageData(0, 0, off.width, off.height);
   const pixels = [];
-  const step = Math.max(2, Math.floor(fontSize / 28));
+  const step = Math.max(1, Math.floor(fontSize / 48));
   for (let y = 0; y < height; y += step) {
     for (let x = 0; x < width; x += step) {
-      if (data[(y * width + x) * 4 + 3] > 40) {
+      if (data[(y * width + x) * 4 + 3] > 20) {
         pixels.push({ x, y });
       }
     }
   }
 
   if (pixels.length === 0) {
-    return buildHeartTargets(n, W, H, options);
+    return null;
   }
 
-  // 打乱采样点，避免按扫描线顺序挤在一起
   for (let i = pixels.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     const tmp = pixels[i];
@@ -71,88 +78,39 @@ export function buildNameTargets(n, W, H, options) {
     pixels[j] = tmp;
   }
 
-  const offsetY = H * (options.isPhone ? 0.42 : 0.4);
+  const offsetY = H * (options.isPhone ? 0.55 : 0.56);
   const points = [];
+  const jitterScale = Math.max(1, step * 0.35);
   for (let i = 0; i < n; i++) {
     const p = pixels[i % pixels.length];
-    const jitter = (Math.random() - 0.5) * step * 0.8;
+    const jitter = (Math.random() - 0.5) * jitterScale;
     points.push({
       x: p.x + (W - off.width) / 2 + jitter,
-      y: p.y + offsetY - off.height / 2 + jitter,
+      y: p.y + offsetY - midY + jitter,
     });
   }
   return points;
 }
 
-function noteOutline(cx, cy, scale) {
-  const pts = [];
-  // 符头（椭圆）
-  for (let i = 0; i < 24; i++) {
-    const a = (i / 24) * Math.PI * 2;
-    pts.push({
-      x: cx + Math.cos(a) * 10 * scale + Math.sin(a) * 2 * scale,
-      y: cy + Math.sin(a) * 7 * scale,
-    });
+/** 名字轮廓：默认「兰」 */
+export function buildNameTargets(n, W, H, options) {
+  const text = options.nameText || '兰';
+  const points = sampleGlyphTargets(Array.from(text), n, W, H, options);
+  if (!points) {
+    return buildHeartTargets(n, W, H, options);
   }
-  // 符干
-  const stemX = cx + 9 * scale;
-  const stemTop = cy - 38 * scale;
-  for (let i = 0; i <= 16; i++) {
-    const t = i / 16;
-    pts.push({
-      x: stemX,
-      y: cy + (stemTop - cy) * t,
-    });
-  }
-  // 符尾
-  for (let i = 0; i <= 12; i++) {
-    const t = i / 12;
-    pts.push({
-      x: stemX + Math.sin(t * Math.PI) * 14 * scale,
-      y: stemTop + t * 18 * scale,
-    });
-  }
-  return pts;
+  return points;
 }
 
-/** 多个音符轮廓点 */
+/** 音乐符号轮廓：♪ ♫ ♬ */
 export function buildNoteTargets(n, W, H, options) {
-  const scale = Math.min(W, H) * (options.isPhone ? 0.012 : 0.011);
-  const notes = options.isPhone
-    ? [
-        { x: 0.28, y: 0.52 },
-        { x: 0.5, y: 0.46 },
-        { x: 0.72, y: 0.54 },
-        { x: 0.4, y: 0.66 },
-        { x: 0.62, y: 0.64 },
-      ]
-    : [
-        { x: 0.22, y: 0.5 },
-        { x: 0.38, y: 0.44 },
-        { x: 0.52, y: 0.52 },
-        { x: 0.66, y: 0.46 },
-        { x: 0.8, y: 0.54 },
-        { x: 0.32, y: 0.66 },
-        { x: 0.58, y: 0.68 },
-        { x: 0.74, y: 0.64 },
-      ];
-
-  const pool = [];
-  for (const note of notes) {
-    const outline = noteOutline(W * note.x, H * note.y, scale);
-    for (const p of outline) {
-      pool.push(p);
-    }
-  }
-
-  const points = [];
-  for (let i = 0; i < n; i++) {
-    const p = pool[i % pool.length];
-    const jitter = (Math.random() - 0.5) * Math.min(W, H) * 0.008;
-    points.push({
-      x: p.x + jitter,
-      y: p.y + jitter,
-    });
+  const symbols = options.noteShapeSymbols || ['♪', '♫', '♬'];
+  const points = sampleGlyphTargets(symbols, n, W, H, {
+    ...options,
+    isPhone: options.isPhone,
+  });
+  if (!points) {
+    return buildHeartTargets(n, W, H, options);
   }
   return points;
 }
@@ -187,11 +145,4 @@ export const EFFECT_BUILDERS = {
   name: buildNameTargets,
   note: buildNoteTargets,
   wave: buildWaveTargets,
-};
-
-export const EFFECT_LABELS = {
-  heart: '爱心',
-  name: '名字',
-  note: '音符',
-  wave: '波浪',
 };
