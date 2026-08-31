@@ -1,0 +1,135 @@
+:root {
+  --ui-text: #10314f;
+  --ui-text-soft: rgba(16, 49, 79, 0.72);
+  --ui-glow: rgba(255, 255, 255, 0.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ui-text: #eaf6ff;
+    --ui-text-soft: rgba(234, 246, 255, 0.68);
+    --ui-glow: rgba(160, 220, 255, 0.35);
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0a1526;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+
+#scene {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#ui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: clamp(48px, 12vh, 120px);
+  pointer-events: none;
+  user-select: none;
+  font-family: 'Songti SC', 'Noto Serif SC', 'Source Han Serif SC', serif;
+}
+
+#love-words {
+  font-size: clamp(16px, 2.6vw, 24px);
+  letter-spacing: 0.35em;
+  text-indent: 0.35em;
+  color: var(--ui-text-soft);
+  margin-bottom: clamp(20px, 4vh, 44px);
+  text-shadow: 0 0 18px var(--ui-glow);
+}
+
+#timer-days {
+  font-size: clamp(56px, 11vw, 128px);
+  font-weight: 600;
+  line-height: 1.05;
+  color: var(--ui-text);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 24px var(--ui-glow);
+}
+
+#timer-days small {
+  font-size: 0.22em;
+  font-weight: 400;
+  margin-left: 0.35em;
+  letter-spacing: 0.3em;
+  color: var(--ui-text-soft);
+}
+
+#timer-hms {
+  margin-top: clamp(6px, 1.6vh, 16px);
+  font-size: clamp(18px, 3.4vw, 34px);
+  color: var(--ui-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.12em;
+}
+
+#timer-hms span + span {
+  margin-left: 0.9em;
+}
+
+#timer-hms small {
+  font-size: 0.52em;
+  margin-left: 0.28em;
+  color: var(--ui-text-soft);
+}
+
+#since {
+  margin-top: clamp(18px, 4vh, 40px);
+  font-size: clamp(11px, 1.6vw, 15px);
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  color: var(--ui-text-soft);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+#hint {
+  position: absolute;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+  color: var(--ui-text-soft);
+  pointer-events: none;
+  user-select: none;
+  opacity: 0;
+  animation: hint-fade 2.4s ease 1.8s forwards;
+}
+
+@keyframes hint-fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.75;
+  }
+}
