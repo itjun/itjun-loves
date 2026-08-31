@@ -9,7 +9,9 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #f4ede1;
+  background: #0b1220;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 #app {
@@ -17,132 +19,112 @@ body {
   width: 100vw;
   height: 100vh;
   height: 100dvh;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 20%, #1a2740 0%, transparent 55%),
+    linear-gradient(180deg, #0b1220 0%, #121a2c 55%, #0b1220 100%);
 }
 
-#scene {
+#stage {
   position: absolute;
   inset: 0;
-  display: block;
   width: 100%;
   height: 100%;
+  display: block;
 }
-
-/* 白色系晨光：暖白底 + 深海蓝字 + 金色点缀 */
 
 #ui {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding-top: clamp(36px, 8vh, 90px);
+  padding-top: max(28px, env(safe-area-inset-top));
   pointer-events: none;
   user-select: none;
   font-family: 'Songti SC', 'Noto Serif SC', 'Source Han Serif SC', serif;
-  color: #2c4a63;
+  color: rgba(234, 242, 255, 0.92);
 }
 
 #love-words {
-  font-size: clamp(15px, 2.4vw, 22px);
-  letter-spacing: 0.35em;
-  text-indent: 0.35em;
-  color: rgba(44, 74, 99, 0.78);
-  margin-bottom: clamp(18px, 3.6vh, 40px);
+  font-size: clamp(14px, 3.8vw, 18px);
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  color: rgba(234, 242, 255, 0.72);
+  margin-bottom: 12px;
 }
 
 #timer-days {
-  font-size: clamp(52px, 10vw, 116px);
+  font-size: clamp(42px, 13vw, 72px);
   font-weight: 600;
   line-height: 1.05;
   font-variant-numeric: tabular-nums;
-  color: #2c4a63;
 }
 
 #timer-days small {
-  font-size: 0.22em;
+  font-size: 0.24em;
   font-weight: 400;
-  margin-left: 0.35em;
-  letter-spacing: 0.3em;
-  color: rgba(44, 74, 99, 0.6);
+  margin-left: 0.28em;
+  letter-spacing: 0.28em;
+  color: rgba(234, 242, 255, 0.6);
 }
 
 #timer-hms {
-  margin-top: clamp(6px, 1.4vh, 14px);
-  font-size: clamp(17px, 3.2vw, 32px);
+  margin-top: 6px;
+  font-size: clamp(14px, 4vw, 20px);
+  letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.12em;
-  color: #2c4a63;
 }
 
 #timer-hms span + span {
-  margin-left: 0.9em;
+  margin-left: 0.7em;
 }
 
 #timer-hms small {
-  font-size: 0.52em;
-  margin-left: 0.28em;
-  color: rgba(44, 74, 99, 0.6);
+  font-size: 0.55em;
+  margin-left: 0.2em;
+  color: rgba(234, 242, 255, 0.55);
 }
 
 #since {
-  margin-top: clamp(16px, 3.4vh, 34px);
-  font-size: clamp(10px, 1.5vw, 14px);
-  letter-spacing: 0.5em;
-  text-indent: 0.5em;
-  color: rgba(44, 74, 99, 0.55);
+  margin-top: 10px;
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  text-indent: 0.4em;
+  color: rgba(234, 242, 255, 0.5);
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 #hint {
   position: absolute;
-  bottom: max(18px, env(safe-area-inset-bottom));
   left: 0;
   right: 0;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 2;
   text-align: center;
   font-size: 12px;
-  letter-spacing: 0.4em;
-  text-indent: 0.4em;
-  color: rgba(44, 74, 99, 0.45);
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  color: rgba(234, 242, 255, 0.45);
   pointer-events: none;
   user-select: none;
-  font-family: 'Songti SC', 'Noto Serif SC', serif;
   opacity: 0;
-  animation: hint-fade 2.4s ease 1.8s forwards;
+  transition: opacity 0.6s ease;
 }
 
-/* 竖屏手机：给海面与发光字留出空间 */
-@media (max-aspect-ratio: 3/4) {
-  #ui {
-    padding-top: clamp(30px, 6.5vh, 60px);
-  }
-  #love-words {
-    font-size: clamp(14px, 4vw, 19px);
-    letter-spacing: 0.22em;
-    text-indent: 0.22em;
-    margin-bottom: 14px;
-  }
-  #timer-days {
-    font-size: clamp(46px, 14vw, 84px);
-  }
-  #timer-hms {
-    font-size: clamp(15px, 4.2vw, 22px);
-  }
-  #since {
-    margin-top: 12px;
-    font-size: 10px;
-    letter-spacing: 0.35em;
-    text-indent: 0.35em;
-  }
+#hint.show {
+  opacity: 1;
 }
 
-@keyframes hint-fade {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 0.75;
+/* 桌面浏览器也按手机竖屏比例居中显示 */
+@media (min-aspect-ratio: 3/4) {
+  #app {
+    width: min(430px, 100vw);
+    margin: 0 auto;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
   }
 }
