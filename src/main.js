@@ -19,11 +19,19 @@ const ctx = canvas.getContext('2d');
 const hint = document.getElementById('hint');
 const effectsEl = document.getElementById('effects');
 
+// 同一效果自动循环：聚合 → 定格 → 散开 → 稍停 → 再聚合 …
 const PHASE = {
-  SCATTER: 0,
-  GATHER: 1,
-  HOLD: 2,
-  EXPLODE: 3,
+  GATHER: 0,
+  HOLD: 1,
+  EXPLODE: 2,
+  WAIT: 3,
+};
+
+const TIMING = {
+  gather: 3.0,
+  hold: 2.2,
+  explode: 1.8,
+  wait: 0.7,
 };
 
 let dpr = 1;
@@ -38,7 +46,7 @@ let heartScale = 0.022;
 let heartCenterY = 0.55;
 let currentEffect = 'heart';
 let bubbles = [];
-let phase = PHASE.SCATTER;
+let phase = PHASE.GATHER;
 let phaseStart = 0;
 let resizeTimer = null;
 
@@ -55,21 +63,20 @@ function layoutConfig() {
   isPhone = W < 768 || W / H < 0.85;
   const compact = isCompactEffect();
   if (isPhone) {
-    bubbleCount = compact ? 280 : 200;
-    bubbleFont = compact ? 12 : 13;
-    bubblePadX = compact ? 10 : 18;
-    bubbleH = compact ? 22 : 28;
+    bubbleCount = currentEffect === 'name' ? 320 : compact ? 260 : 200;
+    bubbleFont = currentEffect === 'name' ? 11 : compact ? 12 : 13;
+    bubblePadX = currentEffect === 'name' ? 8 : compact ? 10 : 18;
+    bubbleH = currentEffect === 'name' ? 20 : compact ? 22 : 28;
     heartScale = 0.022;
     heartCenterY = 0.56;
   } else {
-    bubbleCount = compact ? 400 : 320;
-    bubbleFont = compact ? 14 : 15;
-    bubblePadX = compact ? 12 : 22;
-    bubbleH = compact ? 24 : 32;
+    bubbleCount = currentEffect === 'name' ? 480 : compact ? 380 : 320;
+    bubbleFont = currentEffect === 'name' ? 12 : compact ? 14 : 15;
+    bubblePadX = currentEffect === 'name' ? 10 : compact ? 12 : 22;
+    bubbleH = currentEffect === 'name' ? 22 : compact ? 24 : 32;
     heartScale = 0.028;
     heartCenterY = 0.58;
   }
-  hint.classList.remove('show');
 }
 
 function shapeOptions() {
@@ -96,17 +103,26 @@ function measureBubble(text) {
   };
 }
 
-function randomScatterPoint() {
+function randomInView() {
   return {
     x: Math.random() * W,
     y: H * (isPhone ? 0.28 : 0.22) + Math.random() * H * (isPhone ? 0.55 : 0.62),
   };
 }
 
+/** 散开目标：飞出视野外，再聚回来才明显 */
+function randomExplodePoint() {
+  const angle = Math.random() * Math.PI * 2;
+  const dist = Math.max(W, H) * (0.55 + Math.random() * 0.75);
+  return {
+    x: W * 0.5 + Math.cos(angle) * dist,
+    y: H * 0.55 + Math.sin(angle) * dist,
+  };
+}
+
 function bubbleTextForIndex(i) {
   if (currentEffect === 'name') {
-    const chars = Array.from(NAME_TEXT);
-    return chars[i % chars.length];
+    return NAME_TEXT;
   }
   if (currentEffect === 'note') {
     return NOTE_SYMBOLS[i % NOTE_SYMBOLS.length];
@@ -122,7 +138,7 @@ function createBubbles() {
     const text = bubbleTextForIndex(i);
     const color = BUBBLE_COLORS[i % BUBBLE_COLORS.length];
     const size = measureBubble(text);
-    const start = randomScatterPoint();
+    const start = randomInView();
     bubbles.push({
       text,
       color,
@@ -136,19 +152,10 @@ function createBubbles() {
       hy: targets[i].y,
       ex: 0,
       ey: 0,
-      rot: (Math.random() - 0.5) * 0.35,
+      rot: (Math.random() - 0.5) * 0.3,
       delay: Math.random() * 0.35,
       trail: [],
     });
-  }
-  assignExplodeTargets();
-}
-
-function assignExplodeTargets() {
-  for (const b of bubbles) {
-    const scatter = randomScatterPoint();
-    b.ex = scatter.x;
-    b.ey = scatter.y;
   }
 }
 
@@ -175,7 +182,7 @@ function resize(forceRestart) {
 
   if (forceRestart || sizeChanged) {
     createBubbles();
-    restart();
+    restartCycle();
   }
 }
 
@@ -190,42 +197,57 @@ function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-function restart() {
-  setPhase(PHASE.SCATTER, performance.now());
-  hint.classList.remove('show');
+function restartCycle() {
   for (const b of bubbles) {
-    b.x = b.sx;
-    b.y = b.sy;
+    const start = randomInView();
+    b.sx = start.x;
+    b.sy = start.y;
+    b.x = start.x;
+    b.y = start.y;
+    b.delay = Math.random() * 0.35;
     b.trail = [];
   }
+  setPhase(PHASE.GATHER, performance.now());
+  hint.textContent = '自动循环：聚合 → 散开 → 再聚合';
+  hint.classList.add('show');
 }
 
-/** 散开结束后：以当前位置为新起点，再次聚合 */
-function loopToGather(now) {
+/** 散开结束 → 再从当前位置聚合回目标形 */
+function beginGatherAgain(now) {
   for (const b of bubbles) {
     b.sx = b.x;
     b.sy = b.y;
+    b.delay = Math.random() * 0.3;
     b.trail = [];
-    b.delay = Math.random() * 0.28;
   }
   setPhase(PHASE.GATHER, now);
+}
+
+function beginExplode(now) {
+  for (const b of bubbles) {
+    const end = randomExplodePoint();
+    b.sx = b.x;
+    b.sy = b.y;
+    b.ex = end.x;
+    b.ey = end.y;
+    b.delay = Math.random() * 0.3;
+    b.trail = [];
+  }
+  setPhase(PHASE.EXPLODE, now);
 }
 
 function switchEffect(effect) {
   if (!EFFECT_BUILDERS[effect]) {
     return;
   }
-  if (effect === currentEffect) {
-    createBubbles();
-    restart();
-    return;
-  }
-  currentEffect = effect;
-  for (const btn of effectsEl.querySelectorAll('.effect-btn')) {
-    btn.classList.toggle('active', btn.dataset.effect === effect);
+  if (effect !== currentEffect) {
+    currentEffect = effect;
+    for (const btn of effectsEl.querySelectorAll('.effect-btn')) {
+      btn.classList.toggle('active', btn.dataset.effect === effect);
+    }
   }
   createBubbles();
-  restart();
+  restartCycle();
 }
 
 function drawBubble(b, alpha) {
@@ -260,25 +282,21 @@ function drawBubble(b, alpha) {
 function update(now) {
   const elapsed = (now - phaseStart) / 1000;
 
-  if (phase === PHASE.SCATTER) {
-    if (elapsed > 0.8) {
-      setPhase(PHASE.GATHER, now);
-    }
-  } else if (phase === PHASE.GATHER) {
-    const duration = 3.0;
+  if (phase === PHASE.GATHER) {
+    const duration = TIMING.gather;
     for (const b of bubbles) {
       const local = Math.min(1, Math.max(0, (elapsed - b.delay) / duration));
       const k = easeInOutCubic(local);
       b.x = b.sx + (b.hx - b.sx) * k;
       b.y = b.sy + (b.hy - b.sy) * k;
-      if (local > 0.05 && local < 0.95 && Math.random() < 0.45) {
+      if (local > 0.05 && local < 0.95 && Math.random() < 0.4) {
         b.trail.push({ x: b.x, y: b.y });
         if (b.trail.length > 6) {
           b.trail.shift();
         }
       }
     }
-    if (elapsed > duration + 0.3) {
+    if (elapsed > duration + 0.4) {
       for (const b of bubbles) {
         b.x = b.hx;
         b.y = b.hy;
@@ -292,26 +310,24 @@ function update(now) {
       b.x = b.hx + Math.sin(elapsed * 1.5 + b.delay * 6) * 0.6;
       b.y = b.hy + breath * 0.2;
     }
-    if (elapsed > 2.4) {
-      assignExplodeTargets();
-      for (const b of bubbles) {
-        b.sx = b.x;
-        b.sy = b.y;
-        b.delay = Math.random() * 0.25;
-      }
-      setPhase(PHASE.EXPLODE, now);
+    if (elapsed > TIMING.hold) {
+      beginExplode(now);
     }
   } else if (phase === PHASE.EXPLODE) {
-    const duration = 1.6;
+    const duration = TIMING.explode;
     for (const b of bubbles) {
       const local = Math.min(1, Math.max(0, (elapsed - b.delay) / duration));
       const k = easeInOutCubic(local);
       b.x = b.sx + (b.ex - b.sx) * k;
       b.y = b.sy + (b.ey - b.sy) * k;
     }
-    if (elapsed > duration + 0.25) {
-      // 散开后立即再聚合，所有效果无限循环
-      loopToGather(now);
+    if (elapsed > duration + 0.4) {
+      setPhase(PHASE.WAIT, now);
+    }
+  } else if (phase === PHASE.WAIT) {
+    // 散开后稍停，再自动聚合，形成循环
+    if (elapsed > TIMING.wait) {
+      beginGatherAgain(now);
     }
   }
 }
@@ -340,10 +356,10 @@ function render() {
   }
 }
 
-function loop(now) {
+function frame(now) {
   update(now);
   render();
-  requestAnimationFrame(loop);
+  requestAnimationFrame(frame);
 }
 
 effectsEl.addEventListener('pointerdown', (e) => {
@@ -362,4 +378,4 @@ window.addEventListener('orientationchange', () => {
 });
 
 resize(true);
-requestAnimationFrame(loop);
+requestAnimationFrame(frame);

@@ -107,10 +107,10 @@ body {
   bottom: max(18px, env(safe-area-inset-bottom));
   z-index: 2;
   text-align: center;
-  font-size: clamp(12px, 1.2vw, 14px);
-  letter-spacing: 0.28em;
-  text-indent: 0.28em;
-  color: rgba(140, 50, 88, 0.5);
+  font-size: clamp(11px, 1.1vw, 13px);
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  color: rgba(140, 50, 88, 0.45);
   pointer-events: none;
   user-select: none;
   opacity: 0;

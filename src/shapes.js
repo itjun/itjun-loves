@@ -37,13 +37,16 @@ function sampleGlyphTargets(glyphs, n, W, H, options) {
   const oc = off.getContext('2d', { willReadFrequently: true });
   const single = glyphs.length === 1;
   const fontSize = Math.min(W, H) * (single
-    ? (options.isPhone ? 0.42 : 0.36)
+    ? (options.isPhone ? 0.5 : 0.46)
     : (options.isPhone ? 0.22 : 0.2));
   off.width = Math.max(64, Math.floor(W));
-  off.height = Math.max(64, Math.floor(H * 0.55));
+  off.height = Math.max(64, Math.floor(H * 0.6));
 
   oc.clearRect(0, 0, off.width, off.height);
   oc.fillStyle = '#000';
+  oc.strokeStyle = '#000';
+  oc.lineWidth = Math.max(2, fontSize * 0.04);
+  oc.lineJoin = 'round';
   oc.font = `900 ${fontSize}px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Songti SC", sans-serif`;
   oc.textAlign = 'center';
   oc.textBaseline = 'middle';
@@ -53,15 +56,18 @@ function sampleGlyphTargets(glyphs, n, W, H, options) {
   const startX = off.width / 2 - totalW / 2;
   const midY = off.height / 2;
   for (let i = 0; i < glyphs.length; i++) {
-    oc.fillText(glyphs[i], startX + i * gap, midY);
+    const x = startX + i * gap;
+    // 描边加粗，采样点更密，单字轮廓更清晰
+    oc.strokeText(glyphs[i], x, midY);
+    oc.fillText(glyphs[i], x, midY);
   }
 
   const { data, width, height } = oc.getImageData(0, 0, off.width, off.height);
   const pixels = [];
-  const step = Math.max(1, Math.floor(fontSize / 48));
+  const step = Math.max(1, Math.floor(fontSize / (single ? 56 : 48)));
   for (let y = 0; y < height; y += step) {
     for (let x = 0; x < width; x += step) {
-      if (data[(y * width + x) * 4 + 3] > 20) {
+      if (data[(y * width + x) * 4 + 3] > 16) {
         pixels.push({ x, y });
       }
     }
@@ -78,9 +84,9 @@ function sampleGlyphTargets(glyphs, n, W, H, options) {
     pixels[j] = tmp;
   }
 
-  const offsetY = H * (options.isPhone ? 0.55 : 0.56);
+  const offsetY = H * (options.isPhone ? 0.56 : 0.58);
   const points = [];
-  const jitterScale = Math.max(1, step * 0.35);
+  const jitterScale = Math.max(0.6, step * 0.25);
   for (let i = 0; i < n; i++) {
     const p = pixels[i % pixels.length];
     const jitter = (Math.random() - 0.5) * jitterScale;
