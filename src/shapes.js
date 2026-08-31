@@ -9,12 +9,23 @@ function heartPoint(t, scale) {
   return { x: x * scale, y: y * scale };
 }
 
+function jitterPoint(x, y, amount) {
+  return {
+    x: x + (Math.random() - 0.5) * amount,
+    y: y + (Math.random() - 0.5) * amount,
+  };
+}
+
+function centerY(H, options) {
+  return H * (options.heartCenterY || 0.56);
+}
+
 export function buildHeartTargets(n, W, H, options) {
   const points = [];
   const base = Math.min(W, H) * options.heartScale;
   const rings = [1.0, 0.88, 0.76, 0.64, 0.52];
   const perRing = Math.floor(n / rings.length);
-  const cy = H * options.heartCenterY;
+  const cy = centerY(H, options);
 
   for (let r = 0; r < rings.length; r++) {
     const scale = base * rings[r];
@@ -22,11 +33,7 @@ export function buildHeartTargets(n, W, H, options) {
     for (let i = 0; i < count; i++) {
       const t = (i / count) * Math.PI * 2 + r * 0.08;
       const p = heartPoint(t, scale);
-      const jitter = (Math.random() - 0.5) * Math.min(W, H) * 0.01;
-      points.push({
-        x: W * 0.5 + p.x + jitter,
-        y: cy + p.y + jitter,
-      });
+      points.push(jitterPoint(W * 0.5 + p.x, cy + p.y, Math.min(W, H) * 0.01));
     }
   }
   return points;
@@ -36,7 +43,6 @@ function sampleGlyphTargets(glyphs, n, W, H, options) {
   const off = document.createElement('canvas');
   const oc = off.getContext('2d', { willReadFrequently: true });
   const single = glyphs.length === 1;
-  // 单字「兰」/「♫」用更大字号，轮廓更清楚
   const isMusic = single && (glyphs[0] === '♫' || glyphs[0] === '♪' || glyphs[0] === '♬');
   const fontSize = Math.min(W, H) * (single
     ? (isMusic
@@ -61,7 +67,6 @@ function sampleGlyphTargets(glyphs, n, W, H, options) {
   const midY = off.height / 2;
   for (let i = 0; i < glyphs.length; i++) {
     const x = startX + i * gap;
-    // 描边加粗，采样点更密，单字轮廓更清晰
     oc.strokeText(glyphs[i], x, midY);
     oc.fillText(glyphs[i], x, midY);
   }
@@ -93,36 +98,30 @@ function sampleGlyphTargets(glyphs, n, W, H, options) {
   const jitterScale = Math.max(0.6, step * 0.25);
   for (let i = 0; i < n; i++) {
     const p = pixels[i % pixels.length];
-    const jitter = (Math.random() - 0.5) * jitterScale;
-    points.push({
-      x: p.x + (W - off.width) / 2 + jitter,
-      y: p.y + offsetY - midY + jitter,
-    });
+    points.push(jitterPoint(
+      p.x + (W - off.width) / 2,
+      p.y + offsetY - midY,
+      jitterScale,
+    ));
   }
   return points;
 }
 
-/** 名字轮廓：默认「兰」 */
 export function buildNameTargets(n, W, H, options) {
   const text = options.nameText || '兰';
-  const points = sampleGlyphTargets(Array.from(text), n, W, H, options);
-  if (!points) {
-    return buildHeartTargets(n, W, H, options);
-  }
-  return points;
+  return sampleGlyphTargets(Array.from(text), n, W, H, options) || buildHeartTargets(n, W, H, options);
 }
 
-/** 音乐符号轮廓：大型 ♫ */
 export function buildNoteTargets(n, W, H, options) {
   const symbols = options.noteShapeSymbols || ['♫'];
-  const points = sampleGlyphTargets(symbols, n, W, H, options);
-  if (!points) {
-    return buildHeartTargets(n, W, H, options);
-  }
-  return points;
+  return sampleGlyphTargets(symbols, n, W, H, options) || buildHeartTargets(n, W, H, options);
 }
 
-/** 多层正弦波浪 */
+/** 浪漫：汇聚成「爱」 */
+export function buildRomanceTargets(n, W, H, options) {
+  return sampleGlyphTargets(['爱'], n, W, H, options) || buildHeartTargets(n, W, H, options);
+}
+
 export function buildWaveTargets(n, W, H, options) {
   const rows = options.isPhone ? 5 : 6;
   const perRow = Math.floor(n / rows);
@@ -140,8 +139,210 @@ export function buildWaveTargets(n, W, H, options) {
       const t = i / Math.max(1, count - 1);
       const x = W * 0.08 + t * W * 0.84;
       const y = baseY + Math.sin(t * Math.PI * freq + phase) * amp;
-      const jitter = (Math.random() - 0.5) * 4;
-      points.push({ x: x + jitter, y: y + jitter });
+      points.push(jitterPoint(x, y, 4));
+    }
+  }
+  return points;
+}
+
+/** 方形：多层方框 */
+export function buildSquareTargets(n, W, H, options) {
+  const cx = W * 0.5;
+  const cy = centerY(H, options);
+  const half = Math.min(W, H) * (options.isPhone ? 0.22 : 0.2);
+  const rings = [1, 0.78, 0.56, 0.34];
+  const points = [];
+  const perRing = Math.floor(n / rings.length);
+
+  for (let r = 0; r < rings.length; r++) {
+    const count = r === rings.length - 1 ? n - points.length : perRing;
+    const s = half * rings[r];
+    // 周长按边分配
+    for (let i = 0; i < count; i++) {
+      const t = i / count;
+      const edge = Math.floor(t * 4) % 4;
+      const u = (t * 4) % 1;
+      let x = cx;
+      let y = cy;
+      if (edge === 0) {
+        x = cx - s + u * 2 * s;
+        y = cy - s;
+      } else if (edge === 1) {
+        x = cx + s;
+        y = cy - s + u * 2 * s;
+      } else if (edge === 2) {
+        x = cx + s - u * 2 * s;
+        y = cy + s;
+      } else {
+        x = cx - s;
+        y = cy + s - u * 2 * s;
+      }
+      points.push(jitterPoint(x, y, 3));
+    }
+  }
+  return points;
+}
+
+/** 菱形 */
+export function buildDiamondTargets(n, W, H, options) {
+  const cx = W * 0.5;
+  const cy = centerY(H, options);
+  const rx = Math.min(W, H) * (options.isPhone ? 0.28 : 0.26);
+  const ry = Math.min(W, H) * (options.isPhone ? 0.34 : 0.32);
+  const rings = [1, 0.75, 0.5, 0.28];
+  const points = [];
+  const perRing = Math.floor(n / rings.length);
+
+  for (let r = 0; r < rings.length; r++) {
+    const count = r === rings.length - 1 ? n - points.length : perRing;
+    const sx = rx * rings[r];
+    const sy = ry * rings[r];
+    for (let i = 0; i < count; i++) {
+      const t = i / count;
+      const edge = Math.floor(t * 4) % 4;
+      const u = (t * 4) % 1;
+      let x = cx;
+      let y = cy;
+      if (edge === 0) {
+        x = cx + (1 - u) * sx;
+        y = cy - u * sy;
+      } else if (edge === 1) {
+        x = cx - u * sx;
+        y = cy - (1 - u) * sy;
+      } else if (edge === 2) {
+        x = cx - (1 - u) * sx;
+        y = cy + u * sy;
+      } else {
+        x = cx + u * sx;
+        y = cy + (1 - u) * sy;
+      }
+      points.push(jitterPoint(x, y, 3));
+    }
+  }
+  return points;
+}
+
+/** 气泡：多个圆圈轮廓 */
+export function buildBubblesTargets(n, W, H, options) {
+  const cy = centerY(H, options);
+  const circles = options.isPhone
+    ? [
+        { x: 0.5, y: 0.0, r: 0.16 },
+        { x: 0.28, y: 0.08, r: 0.1 },
+        { x: 0.72, y: 0.06, r: 0.11 },
+        { x: 0.38, y: -0.14, r: 0.08 },
+        { x: 0.64, y: -0.12, r: 0.09 },
+        { x: 0.5, y: 0.18, r: 0.07 },
+      ]
+    : [
+        { x: 0.5, y: 0.0, r: 0.15 },
+        { x: 0.3, y: 0.06, r: 0.1 },
+        { x: 0.7, y: 0.05, r: 0.11 },
+        { x: 0.22, y: -0.1, r: 0.08 },
+        { x: 0.78, y: -0.08, r: 0.09 },
+        { x: 0.42, y: -0.16, r: 0.07 },
+        { x: 0.58, y: 0.16, r: 0.08 },
+        { x: 0.5, y: -0.22, r: 0.06 },
+      ];
+
+  const pool = [];
+  const base = Math.min(W, H);
+  for (const c of circles) {
+    const cx = W * c.x;
+    const yy = cy + H * c.y * 0.35;
+    const radius = base * c.r;
+    const steps = Math.max(18, Math.floor(radius * 1.2));
+    for (let i = 0; i < steps; i++) {
+      const a = (i / steps) * Math.PI * 2;
+      pool.push({
+        x: cx + Math.cos(a) * radius,
+        y: yy + Math.sin(a) * radius,
+      });
+    }
+  }
+
+  const points = [];
+  for (let i = 0; i < n; i++) {
+    const p = pool[i % pool.length];
+    points.push(jitterPoint(p.x, p.y, 4));
+  }
+  return points;
+}
+
+/** 冒泡：自下而上的圆泡串 */
+export function buildRisingTargets(n, W, H, options) {
+  const cols = options.isPhone ? 5 : 7;
+  const perCol = Math.floor(n / cols);
+  const points = [];
+  const top = H * 0.34;
+  const bottom = H * 0.82;
+  const base = Math.min(W, H);
+
+  for (let c = 0; c < cols; c++) {
+    const count = c === cols - 1 ? n - points.length : perCol;
+    const x = W * (0.18 + (0.64 * c) / Math.max(1, cols - 1));
+    for (let i = 0; i < count; i++) {
+      const t = i / Math.max(1, count - 1);
+      // 越往上泡越大、略漂移
+      const y = bottom + (top - bottom) * t;
+      const wobble = Math.sin(t * Math.PI * 3 + c) * base * 0.02;
+      const ring = ((i + c) % 5) / 5;
+      const radius = base * (0.012 + ring * 0.03);
+      const a = (i / count) * Math.PI * 2;
+      points.push(jitterPoint(
+        x + wobble + Math.cos(a) * radius,
+        y + Math.sin(a) * radius * 0.6,
+        3,
+      ));
+    }
+  }
+  return points;
+}
+
+/** 螺旋 */
+export function buildSpiralTargets(n, W, H, options) {
+  const cx = W * 0.5;
+  const cy = centerY(H, options);
+  const maxR = Math.min(W, H) * (options.isPhone ? 0.3 : 0.28);
+  const turns = 3.2;
+  const points = [];
+  for (let i = 0; i < n; i++) {
+    const t = i / n;
+    const a = t * Math.PI * 2 * turns;
+    const r = maxR * t;
+    points.push(jitterPoint(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 3));
+  }
+  return points;
+}
+
+/** 五角星 */
+export function buildStarTargets(n, W, H, options) {
+  const cx = W * 0.5;
+  const cy = centerY(H, options);
+  const outer = Math.min(W, H) * (options.isPhone ? 0.28 : 0.26);
+  const inner = outer * 0.42;
+  const rings = [1, 0.72, 0.48];
+  const points = [];
+  const perRing = Math.floor(n / rings.length);
+
+  for (let r = 0; r < rings.length; r++) {
+    const count = r === rings.length - 1 ? n - points.length : perRing;
+    const o = outer * rings[r];
+    const inn = inner * rings[r];
+    for (let i = 0; i < count; i++) {
+      const t = i / count;
+      // 10 段折线（星形周长）
+      const seg = Math.floor(t * 10) % 10;
+      const u = (t * 10) % 1;
+      const a0 = (-Math.PI / 2) + (seg * Math.PI) / 5;
+      const a1 = (-Math.PI / 2) + ((seg + 1) * Math.PI) / 5;
+      const r0 = seg % 2 === 0 ? o : inn;
+      const r1 = seg % 2 === 0 ? inn : o;
+      const x0 = cx + Math.cos(a0) * r0;
+      const y0 = cy + Math.sin(a0) * r0;
+      const x1 = cx + Math.cos(a1) * r1;
+      const y1 = cy + Math.sin(a1) * r1;
+      points.push(jitterPoint(x0 + (x1 - x0) * u, y0 + (y1 - y0) * u, 3));
     }
   }
   return points;
@@ -152,4 +353,26 @@ export const EFFECT_BUILDERS = {
   name: buildNameTargets,
   note: buildNoteTargets,
   wave: buildWaveTargets,
+  romance: buildRomanceTargets,
+  square: buildSquareTargets,
+  diamond: buildDiamondTargets,
+  bubbles: buildBubblesTargets,
+  rising: buildRisingTargets,
+  spiral: buildSpiralTargets,
+  star: buildStarTargets,
 };
+
+/** 自动轮播顺序 */
+export const EFFECT_ORDER = [
+  'heart',
+  'name',
+  'note',
+  'wave',
+  'romance',
+  'square',
+  'diamond',
+  'bubbles',
+  'rising',
+  'spiral',
+  'star',
+];

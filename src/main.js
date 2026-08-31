@@ -8,7 +8,7 @@ import {
   BUBBLE_PHRASES,
   BUBBLE_COLORS,
 } from './config.js';
-import { EFFECT_BUILDERS } from './shapes.js';
+import { EFFECT_BUILDERS, EFFECT_ORDER } from './shapes.js';
 import './timer.js';
 
 document.getElementById('love-words').textContent = LOVE_WORDS;
@@ -16,10 +16,7 @@ document.getElementById('since').textContent = SINCE_TEXT;
 
 const canvas = document.getElementById('stage');
 const ctx = canvas.getContext('2d');
-const hint = document.getElementById('hint');
-const effectsEl = document.getElementById('effects');
 
-// 同一效果自动循环：聚合 → 定格 → 散开 → 稍停 → 再聚合 …
 const PHASE = {
   GATHER: 0,
   HOLD: 1,
@@ -29,9 +26,9 @@ const PHASE = {
 
 const TIMING = {
   gather: 3.0,
-  hold: 2.2,
+  hold: 2.0,
   explode: 1.8,
-  wait: 0.7,
+  wait: 0.5,
 };
 
 let dpr = 1;
@@ -44,7 +41,8 @@ let bubblePadX = 18;
 let bubbleH = 28;
 let heartScale = 0.022;
 let heartCenterY = 0.55;
-let currentEffect = 'heart';
+let effectIndex = 0;
+let currentEffect = EFFECT_ORDER[0];
 let bubbles = [];
 let phase = PHASE.GATHER;
 let phaseStart = 0;
@@ -55,25 +53,25 @@ function setPhase(next, now) {
   phaseStart = now;
 }
 
-function isCompactEffect() {
-  return currentEffect === 'name' || currentEffect === 'note';
+function isGlyphEffect() {
+  return currentEffect === 'name' || currentEffect === 'note' || currentEffect === 'romance';
 }
 
 function layoutConfig() {
   isPhone = W < 768 || W / H < 0.85;
-  const compact = isCompactEffect();
+  const glyph = isGlyphEffect();
   if (isPhone) {
-    bubbleCount = currentEffect === 'name' ? 320 : currentEffect === 'note' ? 300 : 200;
-    bubbleFont = currentEffect === 'name' || currentEffect === 'note' ? 12 : 13;
-    bubblePadX = currentEffect === 'name' || currentEffect === 'note' ? 8 : 18;
-    bubbleH = currentEffect === 'name' || currentEffect === 'note' ? 20 : 28;
+    bubbleCount = glyph ? 320 : 220;
+    bubbleFont = glyph ? 12 : 13;
+    bubblePadX = glyph ? 8 : 16;
+    bubbleH = glyph ? 20 : 28;
     heartScale = 0.022;
     heartCenterY = 0.56;
   } else {
-    bubbleCount = currentEffect === 'name' ? 480 : currentEffect === 'note' ? 420 : 320;
-    bubbleFont = currentEffect === 'name' || currentEffect === 'note' ? 13 : 15;
-    bubblePadX = currentEffect === 'name' || currentEffect === 'note' ? 10 : 22;
-    bubbleH = currentEffect === 'name' || currentEffect === 'note' ? 22 : 32;
+    bubbleCount = glyph ? 460 : 340;
+    bubbleFont = glyph ? 13 : 15;
+    bubblePadX = glyph ? 10 : 20;
+    bubbleH = glyph ? 22 : 32;
     heartScale = 0.028;
     heartCenterY = 0.58;
   }
@@ -110,7 +108,6 @@ function randomInView() {
   };
 }
 
-/** 散开目标：飞出视野外，再聚回来才明显 */
 function randomExplodePoint() {
   const angle = Math.random() * Math.PI * 2;
   const dist = Math.max(W, H) * (0.55 + Math.random() * 0.75);
@@ -125,8 +122,10 @@ function bubbleTextForIndex(i) {
     return NAME_TEXT;
   }
   if (currentEffect === 'note') {
-    // 以 ♫ 为主，偶尔夹杂其他音符
     return i % 3 === 0 ? NOTE_SYMBOLS[i % NOTE_SYMBOLS.length] : '♫';
+  }
+  if (currentEffect === 'romance') {
+    return i % 4 === 0 ? '爱' : BUBBLE_PHRASES[i % BUBBLE_PHRASES.length];
   }
   return BUBBLE_PHRASES[i % BUBBLE_PHRASES.length];
 }
@@ -209,19 +208,6 @@ function restartCycle() {
     b.trail = [];
   }
   setPhase(PHASE.GATHER, performance.now());
-  hint.textContent = '自动循环：聚合 → 散开 → 再聚合';
-  hint.classList.add('show');
-}
-
-/** 散开结束 → 再从当前位置聚合回目标形 */
-function beginGatherAgain(now) {
-  for (const b of bubbles) {
-    b.sx = b.x;
-    b.sy = b.y;
-    b.delay = Math.random() * 0.3;
-    b.trail = [];
-  }
-  setPhase(PHASE.GATHER, now);
 }
 
 function beginExplode(now) {
@@ -237,18 +223,25 @@ function beginExplode(now) {
   setPhase(PHASE.EXPLODE, now);
 }
 
-function switchEffect(effect) {
-  if (!EFFECT_BUILDERS[effect]) {
-    return;
-  }
-  if (effect !== currentEffect) {
-    currentEffect = effect;
-    for (const btn of effectsEl.querySelectorAll('.effect-btn')) {
-      btn.classList.toggle('active', btn.dataset.effect === effect);
-    }
-  }
+/** 散开结束后切换到下一个效果并再次聚合 */
+function advanceToNextEffect(now) {
+  const prevPositions = bubbles.map((b) => ({ x: b.x, y: b.y }));
+
+  effectIndex = (effectIndex + 1) % EFFECT_ORDER.length;
+  currentEffect = EFFECT_ORDER[effectIndex];
   createBubbles();
-  restartCycle();
+
+  for (let i = 0; i < bubbles.length; i++) {
+    const p = prevPositions[i % prevPositions.length];
+    bubbles[i].sx = p.x;
+    bubbles[i].sy = p.y;
+    bubbles[i].x = p.x;
+    bubbles[i].y = p.y;
+    bubbles[i].delay = Math.random() * 0.3;
+    bubbles[i].trail = [];
+  }
+
+  setPhase(PHASE.GATHER, now);
 }
 
 function drawBubble(b, alpha) {
@@ -326,9 +319,8 @@ function update(now) {
       setPhase(PHASE.WAIT, now);
     }
   } else if (phase === PHASE.WAIT) {
-    // 散开后稍停，再自动聚合，形成循环
     if (elapsed > TIMING.wait) {
-      beginGatherAgain(now);
+      advanceToNextEffect(now);
     }
   }
 }
@@ -362,15 +354,6 @@ function frame(now) {
   render();
   requestAnimationFrame(frame);
 }
-
-effectsEl.addEventListener('pointerdown', (e) => {
-  e.stopPropagation();
-  const btn = e.target.closest('.effect-btn');
-  if (!btn) {
-    return;
-  }
-  switchEffect(btn.dataset.effect);
-});
 
 window.addEventListener('resize', onResize);
 window.addEventListener('orientationchange', () => {
