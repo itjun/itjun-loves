@@ -5,27 +5,27 @@
 }
 
 :root {
-  /* 暖色统一色谱：奶油 → 杏色 → 珊瑚 */
-  --warm-cream: #fff8f2;
-  --warm-pearl: #fff3ea;
-  --warm-peach: #fce6d8;
-  --warm-apricot: #f5d5c2;
-  --warm-blush: #ecc4ae;
-  --warm-rose: #dfa08a;
-  --warm-coral: #c87862;
-  --warm-coral-deep: #b06450;
-  --warm-text: #6b4538;
-  --warm-text-soft: rgba(107, 69, 56, 0.78);
-  --warm-text-muted: rgba(107, 69, 56, 0.58);
-  --warm-text-faint: rgba(107, 69, 56, 0.42);
-  --warm-glow: rgba(255, 215, 185, 0.55);
-  --warm-glow-strong: rgba(255, 200, 170, 0.7);
-  --warm-card: rgba(255, 250, 245, 0.88);
-  --warm-border: rgba(210, 160, 140, 0.32);
-  --warm-shadow: rgba(160, 100, 80, 0.12);
-  --warm-dusk: #8a5a4a;
-  --warm-dusk-deep: #6e4538;
-  --warm-dusk-bg: #5c3a30;
+  /* 蓝色统一色谱：冰蓝 → 天蓝 → 钢蓝 */
+  --tone-cream: #f4f9ff;
+  --tone-pearl: #eef5fc;
+  --tone-peach: #e3eef9;
+  --tone-apricot: #d4e4f5;
+  --tone-blush: #b8d4ec;
+  --tone-rose: #8eb8dc;
+  --tone-coral: #5a8fc4;
+  --tone-coral-deep: #4a7aad;
+  --tone-text: #3d5270;
+  --tone-text-soft: rgba(61, 82, 112, 0.78);
+  --tone-text-muted: rgba(61, 82, 112, 0.58);
+  --tone-text-faint: rgba(61, 82, 112, 0.42);
+  --tone-glow: rgba(180, 215, 255, 0.55);
+  --tone-glow-strong: rgba(160, 205, 255, 0.7);
+  --tone-card: rgba(248, 252, 255, 0.88);
+  --tone-border: rgba(140, 180, 220, 0.32);
+  --tone-shadow: rgba(80, 120, 170, 0.12);
+  --tone-dusk: #4a6588;
+  --tone-dusk-deep: #3a5270;
+  --tone-dusk-bg: #2e4258;
 }
 
 html {
@@ -37,7 +37,7 @@ html {
 
 body {
   font-family: 'ZCOOL XiaoWei', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', serif;
-  color: var(--warm-text);
+  color: var(--tone-text);
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
 }
@@ -59,7 +59,7 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  color: var(--warm-text);
+  color: var(--tone-text);
 }
 
 .page__inner {
@@ -69,43 +69,43 @@ body {
   text-align: center;
 }
 
-/* 各页背景：同一暖色系，仅明度与光晕位置略有变化 */
+/* 各页背景：同一蓝色系，仅明度与光晕位置略有变化 */
 
 .page--hero {
   background:
-    radial-gradient(ellipse at 50% 0%, var(--warm-glow-strong) 0%, transparent 58%),
-    radial-gradient(ellipse at 18% 88%, rgba(245, 200, 175, 0.35) 0%, transparent 48%),
-    radial-gradient(ellipse at 85% 70%, rgba(250, 210, 185, 0.3) 0%, transparent 45%),
-    linear-gradient(168deg, var(--warm-cream) 0%, var(--warm-pearl) 42%, var(--warm-peach) 100%);
+    radial-gradient(ellipse at 50% 0%, var(--tone-glow-strong) 0%, transparent 58%),
+    radial-gradient(ellipse at 18% 88%, rgba(170, 205, 245, 0.35) 0%, transparent 48%),
+    radial-gradient(ellipse at 85% 70%, rgba(185, 215, 250, 0.3) 0%, transparent 45%),
+    linear-gradient(168deg, var(--tone-cream) 0%, var(--tone-pearl) 42%, var(--tone-peach) 100%);
 }
 
 .page--story {
   background:
-    radial-gradient(ellipse at 28% 18%, var(--warm-glow) 0%, transparent 52%),
-    radial-gradient(ellipse at 82% 82%, rgba(240, 190, 165, 0.38) 0%, transparent 46%),
-    linear-gradient(162deg, var(--warm-pearl) 0%, var(--warm-peach) 48%, var(--warm-apricot) 100%);
+    radial-gradient(ellipse at 28% 18%, var(--tone-glow) 0%, transparent 52%),
+    radial-gradient(ellipse at 82% 82%, rgba(160, 200, 240, 0.38) 0%, transparent 46%),
+    linear-gradient(162deg, var(--tone-pearl) 0%, var(--tone-peach) 48%, var(--tone-apricot) 100%);
 }
 
 .page--notes {
   background:
-    radial-gradient(ellipse at 72% 12%, rgba(255, 225, 200, 0.65) 0%, transparent 50%),
-    radial-gradient(ellipse at 22% 88%, rgba(245, 195, 170, 0.32) 0%, transparent 44%),
-    linear-gradient(175deg, var(--warm-peach) 0%, var(--warm-apricot) 46%, var(--warm-blush) 100%);
+    radial-gradient(ellipse at 72% 12%, rgba(190, 220, 255, 0.65) 0%, transparent 50%),
+    radial-gradient(ellipse at 22% 88%, rgba(150, 195, 240, 0.32) 0%, transparent 44%),
+    linear-gradient(175deg, var(--tone-peach) 0%, var(--tone-apricot) 46%, var(--tone-blush) 100%);
 }
 
 .page--letter {
   background:
-    radial-gradient(ellipse at 50% 28%, rgba(255, 220, 200, 0.72) 0%, transparent 55%),
-    radial-gradient(ellipse at 88% 78%, rgba(235, 180, 155, 0.35) 0%, transparent 45%),
-    linear-gradient(172deg, var(--warm-pearl) 0%, var(--warm-apricot) 44%, #f0c9b4 100%);
+    radial-gradient(ellipse at 50% 28%, rgba(200, 225, 255, 0.72) 0%, transparent 55%),
+    radial-gradient(ellipse at 88% 78%, rgba(140, 185, 230, 0.35) 0%, transparent 45%),
+    linear-gradient(172deg, var(--tone-pearl) 0%, var(--tone-apricot) 44%, #c8dcf0 100%);
 }
 
 .page--end {
-  color: var(--warm-pearl);
+  color: var(--tone-pearl);
   background:
-    radial-gradient(ellipse at 50% 38%, rgba(200, 130, 105, 0.45) 0%, transparent 55%),
-    radial-gradient(ellipse at 22% 82%, rgba(160, 95, 75, 0.35) 0%, transparent 45%),
-    linear-gradient(175deg, var(--warm-dusk) 0%, var(--warm-dusk-deep) 52%, var(--warm-dusk-bg) 100%);
+    radial-gradient(ellipse at 50% 38%, rgba(100, 145, 195, 0.45) 0%, transparent 55%),
+    radial-gradient(ellipse at 22% 82%, rgba(70, 110, 165, 0.35) 0%, transparent 45%),
+    linear-gradient(175deg, var(--tone-dusk) 0%, var(--tone-dusk-deep) 52%, var(--tone-dusk-bg) 100%);
 }
 
 /* ── 首页 ── */
@@ -114,7 +114,7 @@ body {
   font-size: clamp(11px, 1.4vw, 14px);
   letter-spacing: 0.45em;
   text-indent: 0.45em;
-  color: var(--warm-text-muted);
+  color: var(--tone-text-muted);
   margin-bottom: 16px;
 }
 
@@ -122,7 +122,7 @@ body {
   font-family: 'Ma Shan Zheng', 'Long Cang', cursive;
   font-size: clamp(42px, 8vw, 72px);
   font-weight: 400;
-  color: var(--warm-coral-deep);
+  color: var(--tone-coral-deep);
   letter-spacing: 0.2em;
   text-indent: 0.2em;
   margin-bottom: 12px;
@@ -133,7 +133,7 @@ body {
   font-size: clamp(16px, 2.6vw, 24px);
   letter-spacing: 0.18em;
   text-indent: 0.18em;
-  color: var(--warm-text-soft);
+  color: var(--tone-text-soft);
   margin-bottom: clamp(24px, 4vh, 40px);
 }
 
@@ -152,22 +152,22 @@ body {
   font-family: 'Long Cang', 'Ma Shan Zheng', cursive;
   font-size: clamp(64px, 14vw, 120px);
   line-height: 1;
-  color: var(--warm-coral);
+  color: var(--tone-coral);
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 2px 16px rgba(200, 120, 96, 0.18);
+  text-shadow: 0 2px 16px rgba(90, 143, 196, 0.18);
 }
 
 .page--hero .counter__unit {
   font-family: 'Ma Shan Zheng', cursive;
   font-size: clamp(20px, 3vw, 32px);
-  color: var(--warm-text-muted);
+  color: var(--tone-text-muted);
   letter-spacing: 0.1em;
 }
 
 .page--hero .counter__sub {
   margin-top: 12px;
   font-size: clamp(16px, 2.5vw, 26px);
-  color: var(--warm-text-soft);
+  color: var(--tone-text-soft);
   letter-spacing: 0.1em;
   font-variant-numeric: tabular-nums;
 }
@@ -179,7 +179,7 @@ body {
 .page--hero .counter__sub em {
   font-style: normal;
   font-weight: 600;
-  color: var(--warm-coral-deep);
+  color: var(--tone-coral-deep);
 }
 
 .page--hero .scroll-hint {
@@ -187,7 +187,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  color: var(--warm-text-faint);
+  color: var(--tone-text-faint);
   font-size: 13px;
   letter-spacing: 0.2em;
   animation: float 2.5s ease-in-out infinite;
@@ -202,14 +202,14 @@ body {
 .section__title {
   font-family: 'Ma Shan Zheng', cursive;
   font-size: clamp(28px, 5vw, 40px);
-  color: var(--warm-coral-deep);
+  color: var(--tone-coral-deep);
   letter-spacing: 0.15em;
   margin-bottom: 8px;
 }
 
 .section__desc {
   font-size: clamp(14px, 2vw, 16px);
-  color: var(--warm-text-muted);
+  color: var(--tone-text-muted);
   margin-bottom: clamp(28px, 4vh, 40px);
   letter-spacing: 0.08em;
 }
@@ -230,7 +230,7 @@ body {
   top: 8px;
   bottom: 8px;
   width: 2px;
-  background: linear-gradient(180deg, var(--warm-blush), var(--warm-apricot), var(--warm-blush));
+  background: linear-gradient(180deg, var(--tone-blush), var(--tone-apricot), var(--tone-blush));
   border-radius: 1px;
 }
 
@@ -251,14 +251,14 @@ body {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--warm-coral);
-  box-shadow: 0 0 0 4px rgba(200, 120, 98, 0.22);
+  background: var(--tone-coral);
+  box-shadow: 0 0 0 4px rgba(90, 143, 196, 0.22);
 }
 
 .page--story .timeline__date {
   display: block;
   font-size: 13px;
-  color: var(--warm-text-muted);
+  color: var(--tone-text-muted);
   letter-spacing: 0.1em;
   margin-bottom: 4px;
 }
@@ -266,14 +266,14 @@ body {
 .page--story .timeline__content h3 {
   font-family: 'Ma Shan Zheng', cursive;
   font-size: clamp(20px, 3.5vw, 26px);
-  color: var(--warm-coral-deep);
+  color: var(--tone-coral-deep);
   margin-bottom: 4px;
   letter-spacing: 0.1em;
 }
 
 .page--story .timeline__content p {
   font-size: clamp(14px, 2vw, 16px);
-  color: var(--warm-text-soft);
+  color: var(--tone-text-soft);
   line-height: 1.7;
 }
 
@@ -292,7 +292,7 @@ body {
   overflow-y: auto;
   padding: 4px;
   scrollbar-width: thin;
-  scrollbar-color: var(--warm-blush) transparent;
+  scrollbar-color: var(--tone-blush) transparent;
 }
 
 .page--notes .notes__item {
@@ -300,16 +300,16 @@ body {
   padding: 8px 16px;
   border-radius: 20px;
   font-size: clamp(13px, 2vw, 15px);
-  color: var(--warm-text);
-  background: var(--warm-card);
-  border: 1px solid var(--warm-border);
+  color: var(--tone-text);
+  background: var(--tone-card);
+  border: 1px solid var(--tone-border);
   backdrop-filter: blur(4px);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .page--notes .notes__item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px var(--warm-shadow);
+  box-shadow: 0 4px 12px var(--tone-shadow);
 }
 
 /* ── 情书 ── */
@@ -317,17 +317,17 @@ body {
 .page--letter .letter {
   text-align: center;
   padding: clamp(28px, 5vw, 44px) clamp(20px, 4vw, 40px);
-  background: var(--warm-card);
-  border: 1px solid var(--warm-border);
+  background: var(--tone-card);
+  border: 1px solid var(--tone-border);
   border-radius: 16px;
   backdrop-filter: blur(8px);
-  box-shadow: 0 8px 32px var(--warm-shadow);
+  box-shadow: 0 8px 32px var(--tone-shadow);
 }
 
 .page--letter .letter__mark {
   font-family: 'Ma Shan Zheng', 'Long Cang', cursive;
   font-size: clamp(48px, 10vw, 72px);
-  color: var(--warm-coral);
+  color: var(--tone-coral);
   margin-bottom: 20px;
   opacity: 0.9;
 }
@@ -335,7 +335,7 @@ body {
 .page--letter .letter__body {
   font-size: clamp(15px, 2.2vw, 18px);
   line-height: 2;
-  color: var(--warm-text-soft);
+  color: var(--tone-text-soft);
   letter-spacing: 0.06em;
   margin-bottom: 24px;
 }
@@ -343,7 +343,7 @@ body {
 .page--letter .letter__sign {
   font-family: 'Ma Shan Zheng', cursive;
   font-size: clamp(16px, 2.5vw, 20px);
-  color: var(--warm-coral-deep);
+  color: var(--tone-coral-deep);
   letter-spacing: 0.15em;
 }
 
@@ -355,21 +355,21 @@ body {
   letter-spacing: 0.2em;
   text-indent: 0.2em;
   margin-bottom: 16px;
-  color: var(--warm-peach);
+  color: var(--tone-peach);
 }
 
 .page--end .end__date {
   font-size: clamp(12px, 1.5vw, 14px);
   letter-spacing: 0.38em;
   text-indent: 0.38em;
-  color: rgba(255, 240, 230, 0.65);
+  color: rgba(220, 235, 250, 0.65);
   margin-bottom: 32px;
 }
 
 .page--end .end__hint {
   font-size: 12px;
   letter-spacing: 0.08em;
-  color: rgba(255, 235, 220, 0.45);
+  color: rgba(210, 228, 248, 0.45);
 }
 
 /* ── 花瓣 Canvas ── */
@@ -400,21 +400,21 @@ body {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  border: 2px solid rgba(180, 120, 100, 0.35);
-  background: rgba(255, 248, 242, 0.65);
+  border: 2px solid rgba(120, 160, 200, 0.35);
+  background: rgba(244, 249, 255, 0.65);
   cursor: pointer;
   padding: 0;
   transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
 
 .page-nav__dot.is-active {
-  background: var(--warm-coral);
-  border-color: var(--warm-coral);
+  background: var(--tone-coral);
+  border-color: var(--tone-coral);
   transform: scale(1.3);
 }
 
 .page-nav__dot:hover {
-  border-color: var(--warm-coral);
+  border-color: var(--tone-coral);
 }
 
 /* ── 返回顶部 ── */
@@ -428,9 +428,9 @@ body {
   height: 44px;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 248, 242, 0.92);
-  color: var(--warm-coral);
-  box-shadow: 0 4px 16px var(--warm-shadow);
+  background: rgba(244, 249, 255, 0.92);
+  color: var(--tone-coral);
+  box-shadow: 0 4px 16px var(--tone-shadow);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -448,7 +448,7 @@ body {
 }
 
 .back-top:hover {
-  background: var(--warm-peach);
+  background: var(--tone-peach);
 }
 
 @keyframes float {
