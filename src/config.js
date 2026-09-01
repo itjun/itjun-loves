@@ -4,16 +4,22 @@ export const LOVE_WORDS = '山川湖海，不及你回眸一笑';
 
 export const SINCE_TEXT = 'SINCE 2020.01.13';
 
-/** 名字效果汇聚文字 */
 export const NAME_TEXT = '兰';
 
-/** 音符效果：气泡内显示的音乐符号 */
-export const NOTE_SYMBOLS = ['♫', '♪', '♬', '♩'];
+export const LETTER = {
+  body:
+    '谢谢你走进我的生命，把平凡的日子过成诗。' +
+    '无论风雨晴暖，我都想牵着你的手，慢慢走，一直走。',
+  sign: '永远爱你的老公',
+};
 
-/** 音符效果：大轮廓只汇聚成 ♫ */
-export const NOTE_SHAPE_SYMBOLS = ['♫'];
+export const TIMELINE = [
+  { date: '2019', title: '相遇', desc: '命运让我们在人海中看见彼此' },
+  { date: '2020.01.13', title: '结为连理', desc: '从此余生，携手同行' },
+  { date: '至今', title: '相守', desc: '每一天都比昨天更爱你一点' },
+];
 
-export const BUBBLE_PHRASES = [
+export const LOVE_NOTES = [
   '好好吃饭',
   '想你啦',
   '注意休息',
@@ -38,16 +44,4 @@ export const BUBBLE_PHRASES = [
   '浪漫',
   '这是爱',
   '周桂兰',
-  '我爱你',
-];
-
-export const BUBBLE_COLORS = [
-  '#ffe08a',
-  '#ffb3c6',
-  '#ffd6a5',
-  '#b8f2e6',
-  '#a0c4ff',
-  '#ffc6ff',
-  '#fdffb6',
-  '#caffbf',
 ];

@@ -2,9 +2,12 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
     <meta name="description" content="纪念我们结婚纪念日" />
-    <meta name="theme-color" content="#b8d9ff" />
+    <meta name="theme-color" content="#f8e8e8" />
     <title>我们的爱 · SINCE 2020.01.13</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,18 +18,61 @@
   </head>
   <body>
     <div id="app">
-      <canvas id="stage"></canvas>
-      <div id="ui">
-        <p id="love-words"></p>
-        <h1 id="timer-days"><span id="days-num">0</span><small>天</small></h1>
-        <p id="timer-hms">
-          <span id="hours-num">00</span><small>时</small>
-          <span id="minutes-num">00</span><small>分</small>
-          <span id="seconds-num">00</span><small>秒</small>
-        </p>
-        <p id="since">SINCE 2020.01.13</p>
-      </div>
+      <canvas id="petals" aria-hidden="true"></canvas>
+
+      <header class="hero">
+        <p class="hero__eyebrow" id="since">SINCE 2020.01.13</p>
+        <h1 class="hero__title">我们的爱</h1>
+        <p class="hero__quote" id="love-words"></p>
+
+        <div class="counter">
+          <div class="counter__main">
+            <span id="days-num" class="counter__days">0</span>
+            <span class="counter__unit">天</span>
+          </div>
+          <div class="counter__sub" id="timer-hms">
+            <span><em id="hours-num">00</em> 时</span>
+            <span><em id="minutes-num">00</em> 分</span>
+            <span><em id="seconds-num">00</em> 秒</span>
+          </div>
+        </div>
+
+        <a class="scroll-hint" href="#story" aria-label="向下滚动">
+          <span>我们的故事</span>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path d="M12 5v14M5 12l7 7 7-7" fill="none" stroke="currentColor" stroke-width="1.5" />
+          </svg>
+        </a>
+      </header>
+
+      <main>
+        <section id="story" class="section reveal">
+          <h2 class="section__title">时光印记</h2>
+          <p class="section__desc">从相遇那天起，每一页都值得珍藏</p>
+          <ol class="timeline" id="timeline"></ol>
+        </section>
+
+        <section id="notes" class="section reveal">
+          <h2 class="section__title">想对你说</h2>
+          <p class="section__desc">藏在心底的话，汇成这一片温柔</p>
+          <div class="notes" id="notes-grid"></div>
+        </section>
+
+        <section id="letter" class="section reveal">
+          <div class="letter">
+            <p class="letter__mark" id="name-mark"></p>
+            <p class="letter__body" id="letter-body"></p>
+            <p class="letter__sign" id="letter-sign"></p>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>愿余生漫漫，皆是你</p>
+        <p class="footer__date" id="footer-since"></p>
+      </footer>
     </div>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
