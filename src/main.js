@@ -42,15 +42,15 @@ for (const note of LOVE_NOTES) {
 const pages = Array.from(document.querySelectorAll('.page'));
 initPageScroll(pages, document.getElementById('page-nav'), document.getElementById('back-top'));
 
-/* ── 花瓣动画（仅首页显示） ── */
+/* ── 梅花飘落 ── */
 const canvas = document.getElementById('petals');
 const ctx = canvas.getContext('2d');
 
 let W = 0;
 let H = 0;
 let dpr = 1;
-let petals = [];
-const PETAL_COUNT = 24;
+let blossoms = [];
+const BLOSSOM_COUNT = 18;
 
 function resizeCanvas() {
   dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -63,68 +63,78 @@ function resizeCanvas() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
-function createPetal() {
+function createBlossom() {
   return {
     x: Math.random() * W,
     y: Math.random() * H - H,
-    size: 5 + Math.random() * 8,
-    speed: 0.3 + Math.random() * 0.6,
-    drift: (Math.random() - 0.5) * 0.3,
+    size: 4 + Math.random() * 6,
+    speed: 0.25 + Math.random() * 0.5,
+    drift: (Math.random() - 0.5) * 0.25,
     rot: Math.random() * Math.PI * 2,
-    rotSpeed: (Math.random() - 0.5) * 0.02,
-    alpha: 0.12 + Math.random() * 0.25,
+    rotSpeed: (Math.random() - 0.5) * 0.015,
+    alpha: 0.1 + Math.random() * 0.22,
   };
 }
 
-function initPetals() {
-  petals = [];
-  for (let i = 0; i < PETAL_COUNT; i++) {
-    const p = createPetal();
-    p.y = Math.random() * H;
-    petals.push(p);
+function initBlossoms() {
+  blossoms = [];
+  for (let i = 0; i < BLOSSOM_COUNT; i++) {
+    const b = createBlossom();
+    b.y = Math.random() * H;
+    blossoms.push(b);
   }
 }
 
-function drawPetal(p) {
+/** 五瓣梅花 */
+function drawBlossom(b) {
   ctx.save();
-  ctx.translate(p.x, p.y);
-  ctx.rotate(p.rot);
-  ctx.globalAlpha = p.alpha;
-  ctx.fillStyle = '#f0b090';
+  ctx.translate(b.x, b.y);
+  ctx.rotate(b.rot);
+  ctx.globalAlpha = b.alpha;
+  ctx.fillStyle = '#d06068';
 
+  const r = b.size;
+  for (let i = 0; i < 5; i++) {
+    ctx.save();
+    ctx.rotate((Math.PI * 2 * i) / 5);
+    ctx.beginPath();
+    ctx.ellipse(0, -r * 0.7, r * 0.45, r * 0.7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  ctx.fillStyle = '#c9a45c';
   ctx.beginPath();
-  ctx.moveTo(0, -p.size);
-  ctx.bezierCurveTo(p.size * 0.6, -p.size * 0.4, p.size * 0.6, p.size * 0.4, 0, p.size);
-  ctx.bezierCurveTo(-p.size * 0.6, p.size * 0.4, -p.size * 0.6, -p.size * 0.4, 0, -p.size);
+  ctx.arc(0, 0, r * 0.18, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.restore();
 }
 
-function animatePetals() {
+function animateBlossoms() {
   ctx.clearRect(0, 0, W, H);
 
-  for (const p of petals) {
-    p.y += p.speed;
-    p.x += p.drift;
-    p.rot += p.rotSpeed;
+  for (const b of blossoms) {
+    b.y += b.speed;
+    b.x += b.drift;
+    b.rot += b.rotSpeed;
 
-    if (p.y > H + p.size * 2) {
-      p.y = -p.size * 2;
-      p.x = Math.random() * W;
+    if (b.y > H + b.size * 3) {
+      b.y = -b.size * 3;
+      b.x = Math.random() * W;
     }
 
-    drawPetal(p);
+    drawBlossom(b);
   }
 
-  requestAnimationFrame(animatePetals);
+  requestAnimationFrame(animateBlossoms);
 }
 
 resizeCanvas();
-initPetals();
-animatePetals();
+initBlossoms();
+animateBlossoms();
 
 window.addEventListener('resize', () => {
   resizeCanvas();
-  initPetals();
+  initBlossoms();
 });

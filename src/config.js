@@ -2,7 +2,7 @@ export const WEDDING_DATE = new Date('2020-01-13T00:00:00');
 
 export const LOVE_WORDS = '山川湖海，不及你回眸一笑';
 
-export const SINCE_TEXT = 'SINCE 2020.01.13';
+export const SINCE_TEXT = '庚子年 · 2020.01.13';
 
 export const NAME_TEXT = '兰';
 
@@ -46,4 +46,4 @@ export const LOVE_NOTES = [
   '周桂兰',
 ];
 
-export const PAGE_LABELS = ['首页', '时光', '情话', '情书', '结尾'];
+export const PAGE_LABELS = ['卷首', '时光', '情话', '情书', '卷尾'];

@@ -7,8 +7,8 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <meta name="description" content="纪念我们结婚纪念日" />
-    <meta name="theme-color" content="#fff4e8" />
-    <title>我们的爱 · SINCE 2020.01.13</title>
+    <meta name="theme-color" content="#f5efe3" />
+    <title>我们的爱 · 庚子年 2020.01.13</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -19,78 +19,99 @@
   <body>
     <canvas id="petals" aria-hidden="true"></canvas>
 
-    <nav class="page-nav" id="page-nav" aria-label="页面导航"></nav>
+    <nav class="page-nav" id="page-nav" aria-label="卷页导航"></nav>
 
-    <button class="back-top" id="back-top" type="button" aria-label="返回顶部" title="返回顶部">
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-        <path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-      </svg>
+    <button class="back-top" id="back-top" type="button" aria-label="返回卷首" title="返回卷首">
+      <span class="back-top__char">卷</span>
+      <span class="back-top__char">首</span>
     </button>
 
     <main id="pages">
-      <!-- 第 1 页：首页计时 -->
-      <section class="page page--hero" id="page-hero" data-theme="hero">
+      <section class="page page--hero" id="page-hero">
         <div class="page__inner">
-          <p class="hero__eyebrow" id="since">SINCE 2020.01.13</p>
-          <h1 class="hero__title">我们的爱</h1>
-          <p class="hero__quote" id="love-words"></p>
+          <div class="scroll-panel scroll-panel--hero">
+            <p class="hero__eyebrow" id="since">庚子年 · 2020.01.13</p>
+            <h1 class="hero__title">我们的爱</h1>
+            <div class="divider divider--gold" aria-hidden="true"></div>
+            <p class="hero__quote" id="love-words"></p>
 
-          <div class="counter">
-            <div class="counter__main">
-              <span id="days-num" class="counter__days">0</span>
-              <span class="counter__unit">天</span>
+            <div class="counter">
+              <p class="counter__label">相守</p>
+              <div class="counter__main">
+                <span id="days-num" class="counter__days">0</span>
+                <span class="counter__unit">天</span>
+              </div>
+              <div class="counter__sub" id="timer-hms">
+                <span><em id="hours-num">00</em> 时</span>
+                <span><em id="minutes-num">00</em> 分</span>
+                <span><em id="seconds-num">00</em> 秒</span>
+              </div>
             </div>
-            <div class="counter__sub" id="timer-hms">
-              <span><em id="hours-num">00</em> 时</span>
-              <span><em id="minutes-num">00</em> 分</span>
-              <span><em id="seconds-num">00</em> 秒</span>
-            </div>
-          </div>
 
-          <p class="scroll-hint">
-            <span>向下滑动</span>
-            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-              <path d="M12 5v14M5 12l7 7 7-7" fill="none" stroke="currentColor" stroke-width="1.5" />
-            </svg>
-          </p>
-        </div>
-      </section>
-
-      <!-- 第 2 页：时光印记 -->
-      <section class="page page--story" id="page-story" data-theme="story">
-        <div class="page__inner">
-          <h2 class="section__title">时光印记</h2>
-          <p class="section__desc">从相遇那天起，每一页都值得珍藏</p>
-          <ol class="timeline" id="timeline"></ol>
-        </div>
-      </section>
-
-      <!-- 第 3 页：想对你说 -->
-      <section class="page page--notes" id="page-notes" data-theme="notes">
-        <div class="page__inner">
-          <h2 class="section__title">想对你说</h2>
-          <p class="section__desc">藏在心底的话，汇成这一片温柔</p>
-          <div class="notes" id="notes-grid"></div>
-        </div>
-      </section>
-
-      <!-- 第 4 页：情书 -->
-      <section class="page page--letter" id="page-letter" data-theme="letter">
-        <div class="page__inner">
-          <div class="letter">
-            <p class="letter__mark" id="name-mark"></p>
-            <p class="letter__body" id="letter-body"></p>
-            <p class="letter__sign" id="letter-sign"></p>
+            <p class="scroll-hint">
+              <span>轻拨卷页</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path d="M12 5v14M5 12l7 7 7-7" fill="none" stroke="currentColor" stroke-width="1.5" />
+              </svg>
+            </p>
           </div>
         </div>
       </section>
 
-      <!-- 第 5 页：结尾 -->
-      <section class="page page--end" id="page-end" data-theme="end">
+      <section class="page page--story" id="page-story">
         <div class="page__inner">
-          <p class="end__title">愿余生漫漫，皆是你</p>
-          <p class="end__date" id="footer-since"></p>
-          <p class="end__hint">↑ 点击右侧圆点或顶部按钮回到首页</p>
+          <div class="scroll-panel">
+            <header class="section-head">
+              <span class="section-head__mark">◆</span>
+              <h2 class="section__title">时光印记</h2>
+              <span class="section-head__mark">◆</span>
+            </header>
+            <p class="section__desc">从相遇那天起，每一页都值得珍藏</p>
+            <ol class="timeline" id="timeline"></ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="page page--notes" id="page-notes">
+        <div class="page__inner">
+          <div class="scroll-panel">
+            <header class="section-head">
+              <span class="section-head__mark">◆</span>
+              <h2 class="section__title">想对你说</h2>
+              <span class="section-head__mark">◆</span>
+            </header>
+            <p class="section__desc">藏在心底的话，汇成这一片温柔</p>
+            <div class="notes" id="notes-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page page--letter" id="page-letter">
+        <div class="page__inner">
+          <div class="scroll-panel scroll-panel--letter">
+            <header class="section-head">
+              <span class="section-head__mark">◆</span>
+              <h2 class="section__title">一纸情书</h2>
+              <span class="section-head__mark">◆</span>
+            </header>
+            <div class="letter">
+              <div class="letter__seal" id="name-mark"></div>
+              <p class="letter__body" id="letter-body"></p>
+              <div class="divider divider--thin" aria-hidden="true"></div>
+              <p class="letter__sign" id="letter-sign"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page page--end" id="page-end">
+        <div class="page__inner">
+          <div class="scroll-panel scroll-panel--end">
+            <p class="end__title">愿余生漫漫，皆是你</p>
+            <div class="divider divider--gold" aria-hidden="true"></div>
+            <p class="end__date" id="footer-since"></p>
+            <p class="end__hint">点击右侧圆点，或按「卷首」回到首页</p>
+          </div>
         </div>
       </section>
     </main>
