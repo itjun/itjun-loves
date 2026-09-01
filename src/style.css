@@ -303,7 +303,9 @@ body {
   .chapter-exit-light,
   .timeline__item.stagger-in,
   .notes__item.stagger-in,
-  .letter__seal.seal-stamp {
+  .letter__seal.seal-stamp,
+  .end__seal.seal-stamp,
+  .scroll-hint {
     animation: none !important;
   }
 }
@@ -662,7 +664,6 @@ body {
   border: 2px solid var(--cinnabar);
   border-radius: 3px;
   background: var(--cinnabar-light);
-  opacity: 0;
 }
 
 .end__date {

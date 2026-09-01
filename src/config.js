@@ -49,8 +49,3 @@ export const LOVE_NOTES = [
   '这是爱',
   '周桂兰',
 ];
-
-/** 各章进入动画：scroll 卷轴 | flip 纸页 | fly 笺飞 | fan 扇开 | seal 印章 */
-export const CHAPTER_ANIMS = ['scroll', 'flip', 'fly', 'fan', 'seal'];
-
-export const PAGE_LABELS = ['卷首', '时光', '情话', '情书', '卷尾'];
