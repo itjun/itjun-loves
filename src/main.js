@@ -90,7 +90,7 @@ function drawPetal(p) {
   ctx.translate(p.x, p.y);
   ctx.rotate(p.rot);
   ctx.globalAlpha = p.alpha;
-  ctx.fillStyle = '#9cb4e8';
+  ctx.fillStyle = '#f0b090';
 
   ctx.beginPath();
   ctx.moveTo(0, -p.size);
