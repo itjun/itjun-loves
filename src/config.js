@@ -1,8 +1,12 @@
 export const WEDDING_DATE = new Date('2020-01-13T00:00:00');
 
-export const LOVE_WORDS = '山川湖海，不及你回眸一笑';
+export const LOVE_WORDS = '山川湖海，都不及你回眸那一笑';
 
 export const SINCE_TEXT = '庚子年 · 2020.01.13';
+
+export const END_TITLE = '余生漫漫，只想和你一起走';
+
+export const END_HINT = '轻拨卷页继续；点「卷首」回到开头';
 
 export const NAME_TEXT = '兰';
 
@@ -14,8 +18,8 @@ export const LETTER = {
 };
 
 export const TIMELINE = [
-  { date: '2018', title: '相遇', desc: '命运让我们在人海中看见彼此' },
-  { date: '2020.01.13', title: '结为连理', desc: '从此余生，携手同行' },
+  { date: '2018', title: '相遇', desc: '2018 那年，你在人群中拿凳子给我' },
+  { date: '2020.01.13', title: '结为连理', desc: '这一天起，余生都想牵着你' },
   { date: '至今', title: '相守', desc: '每一天都比昨天更爱你一点' },
 ];
 
@@ -45,5 +49,8 @@ export const LOVE_NOTES = [
   '这是爱',
   '周桂兰',
 ];
+
+/** 各章进入动画：scroll 卷轴 | flip 纸页 | fly 笺飞 | fan 扇开 | seal 印章 */
+export const CHAPTER_ANIMS = ['scroll', 'flip', 'fly', 'fan', 'seal'];
 
 export const PAGE_LABELS = ['卷首', '时光', '情话', '情书', '卷尾'];

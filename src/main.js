@@ -2,6 +2,8 @@ import './style.css';
 import {
   LOVE_WORDS,
   SINCE_TEXT,
+  END_TITLE,
+  END_HINT,
   NAME_TEXT,
   LETTER,
   TIMELINE,
@@ -13,6 +15,8 @@ import './timer.js';
 document.getElementById('love-words').textContent = LOVE_WORDS;
 document.getElementById('since').textContent = SINCE_TEXT;
 document.getElementById('footer-since').textContent = SINCE_TEXT;
+document.getElementById('end-title').textContent = END_TITLE;
+document.getElementById('end-hint').textContent = END_HINT;
 document.getElementById('name-mark').textContent = NAME_TEXT;
 document.getElementById('letter-body').textContent = LETTER.body;
 document.getElementById('letter-sign').textContent = LETTER.sign;

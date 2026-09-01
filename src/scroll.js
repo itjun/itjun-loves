@@ -1,28 +1,55 @@
-import { PAGE_LABELS } from './config.js';
+import { PAGE_LABELS, CHAPTER_ANIMS } from './config.js';
 
-const CLOSE_MS = 480;
-const OPEN_MS = 620;
-const FAN_MS = 700;
+const ENTER_MS = {
+  scroll: 820,
+  flip: 720,
+  fly: 780,
+  fan: 700,
+  seal: 920,
+};
+const LIGHT_ENTER_MS = 320;
+const EXIT_FADE_MS = 220;
+const EXIT_LIGHT_MS = 280;
+
+const ENTER_CLASS_LIST = CHAPTER_ANIMS.map((name) => `chapter-enter--${name}`);
+const ALL_PANEL_CLASSES = [
+  'chapter-enter',
+  'chapter-enter-light',
+  'chapter-exit-fade',
+  'chapter-exit-light',
+  'is-playing',
+  ...ENTER_CLASS_LIST,
+];
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function clearPanelAnim(panel) {
+  if (!panel) {
+    return;
+  }
+  panel.classList.remove(...ALL_PANEL_CLASSES);
+  panel.querySelectorAll('.stagger-in, .seal-stamp').forEach((el) => {
+    el.classList.remove('stagger-in', 'seal-stamp');
+    el.style.removeProperty('--stagger-i');
+  });
+}
+
+function playStagger(panel, selector) {
+  panel.querySelectorAll(selector).forEach((el, i) => {
+    el.style.setProperty('--stagger-i', String(i));
+    el.classList.add('stagger-in');
+  });
+}
+
 /**
- * 竹帘开合 + 扇面展开的全屏翻页
+ * 章节模式翻页：每章专属进入动画；向前完整，向后轻退
  */
 export function initPageScroll(pages, navEl, backTopBtn) {
   let currentIndex = 0;
   let isBusy = false;
   let touchStartY = 0;
-  const curtain = document.getElementById('curtain');
-  const strips = curtain.querySelectorAll('.curtain__strip');
-
-  // 条幅错开延迟，更有竹帘感
-  strips.forEach((strip, i) => {
-    const delay = Math.abs(i - (strips.length - 1) / 2) * 0.04;
-    strip.style.setProperty('--strip-delay', `${delay}s`);
-  });
 
   function updateNav() {
     const dots = navEl.querySelectorAll('.page-nav__dot');
@@ -35,75 +62,91 @@ export function initPageScroll(pages, navEl, backTopBtn) {
     backTopBtn.classList.toggle('is-visible', currentIndex > 0);
   }
 
-  function setActivePage(index, direction) {
-    for (let i = 0; i < pages.length; i++) {
-      const page = pages[i];
-      const panel = page.querySelector('.scroll-panel');
-      const isActive = i === index;
+  function playEnter(pageIndex, isLight) {
+    const page = pages[pageIndex];
+    const panel = page.querySelector('.scroll-panel');
+    if (!panel) {
+      return;
+    }
 
-      page.classList.toggle('is-active', isActive);
-      page.classList.remove('fan-from-left', 'fan-from-right');
+    clearPanelAnim(panel);
+    void panel.offsetWidth;
+    panel.classList.add('chapter-enter', 'is-playing');
 
-      if (panel) {
-        panel.classList.remove('is-fanning');
-      }
+    if (isLight) {
+      panel.classList.add('chapter-enter-light');
+      return;
+    }
 
-      if (isActive) {
-        const fanClass = direction === 'prev' ? 'fan-from-left' : 'fan-from-right';
-        page.classList.add(fanClass);
-        if (panel) {
-          // 强制重播扇面动画
-          void panel.offsetWidth;
-          panel.classList.add('is-fanning');
-        }
+    const anim = CHAPTER_ANIMS[pageIndex] || 'scroll';
+    panel.classList.add(`chapter-enter--${anim}`);
+
+    if (anim === 'flip') {
+      playStagger(panel, '.timeline__item');
+    }
+    if (anim === 'fly') {
+      playStagger(panel, '.notes__item');
+    }
+    if (anim === 'seal') {
+      const seal = panel.querySelector('.end__seal');
+      if (seal) {
+        void seal.offsetWidth;
+        seal.classList.add('seal-stamp');
       }
     }
   }
 
-  async function scrollToPage(index, direction = 'next') {
+  async function scrollToPage(index) {
     if (index < 0 || index >= pages.length || index === currentIndex || isBusy) {
       return;
     }
 
     isBusy = true;
-    const dir = direction === 'prev' ? 'prev' : 'next';
+    const isForward = index > currentIndex;
+    const isLight = !isForward;
 
-    // 1. 竹帘落下盖住当前页
-    curtain.classList.add('is-visible');
-    void curtain.offsetWidth;
-    curtain.classList.add('is-closed');
-    await wait(CLOSE_MS);
+    const oldPage = pages[currentIndex];
+    const oldPanel = oldPage.querySelector('.scroll-panel');
 
-    // 2. 切换页面，准备扇面展开
+    if (oldPanel) {
+      oldPanel.classList.add(isLight ? 'chapter-exit-light' : 'chapter-exit-fade');
+      await wait(isLight ? EXIT_LIGHT_MS : EXIT_FADE_MS);
+    }
+
+    oldPage.classList.remove('is-active');
+    clearPanelAnim(oldPanel);
+
     currentIndex = index;
-    setActivePage(index, dir);
+    pages[index].classList.add('is-active');
+    playEnter(index, isLight);
     updateNav();
     updateBackTop();
 
-    // 3. 竹帘掀开，露出新页扇面
-    curtain.classList.remove('is-closed');
-    await wait(OPEN_MS);
+    const anim = CHAPTER_ANIMS[index] || 'scroll';
+    const dwell = isLight ? LIGHT_ENTER_MS : ENTER_MS[anim] || 700;
+    await wait(dwell);
 
-    curtain.classList.remove('is-visible');
-    await wait(FAN_MS - 200);
+    const newPanel = pages[index].querySelector('.scroll-panel');
+    if (newPanel) {
+      newPanel.classList.remove('is-playing');
+    }
 
     isBusy = false;
   }
 
   function goNext() {
     if (currentIndex < pages.length - 1) {
-      scrollToPage(currentIndex + 1, 'next');
+      scrollToPage(currentIndex + 1);
     }
   }
 
   function goPrev() {
     if (currentIndex > 0) {
-      scrollToPage(currentIndex - 1, 'prev');
+      scrollToPage(currentIndex - 1);
     }
   }
 
   function onWheel(e) {
-    // 情话列表内部滚动时不翻页
     const notes = e.target.closest('.notes');
     if (notes && notes.scrollHeight > notes.clientHeight) {
       const atTop = notes.scrollTop <= 0;
@@ -142,7 +185,7 @@ export function initPageScroll(pages, navEl, backTopBtn) {
       goPrev();
     } else if (e.key === 'Home') {
       e.preventDefault();
-      scrollToPage(0, 'prev');
+      scrollToPage(0);
     }
   }
 
@@ -172,23 +215,20 @@ export function initPageScroll(pages, navEl, backTopBtn) {
     const label = PAGE_LABELS[i] || `第 ${i + 1} 页`;
     btn.setAttribute('aria-label', label);
     btn.title = label;
-    btn.addEventListener('click', () => {
-      const dir = i < currentIndex ? 'prev' : 'next';
-      scrollToPage(i, dir);
-    });
+    btn.addEventListener('click', () => scrollToPage(i));
     navEl.appendChild(btn);
   }
 
-  backTopBtn.addEventListener('click', () => scrollToPage(0, 'prev'));
+  backTopBtn.addEventListener('click', () => scrollToPage(0));
 
   window.addEventListener('wheel', onWheel, { passive: false });
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('touchstart', onTouchStart, { passive: true });
   window.addEventListener('touchend', onTouchEnd, { passive: true });
 
-  // 初始：只显示第一页，禁止原生滚动
   document.documentElement.classList.add('is-stage');
-  setActivePage(0, 'next');
+  pages[0].classList.add('is-active');
+  playEnter(0, false);
   updateNav();
   updateBackTop();
 }

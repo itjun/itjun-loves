@@ -19,17 +19,6 @@
   <body>
     <canvas id="petals" aria-hidden="true"></canvas>
 
-    <div class="curtain" id="curtain" aria-hidden="true">
-      <div class="curtain__strip"></div>
-      <div class="curtain__strip"></div>
-      <div class="curtain__strip"></div>
-      <div class="curtain__strip"></div>
-      <div class="curtain__strip"></div>
-      <div class="curtain__strip"></div>
-      <div class="curtain__strip"></div>
-      <div class="curtain__strip"></div>
-    </div>
-
     <nav class="page-nav" id="page-nav" aria-label="卷页导航"></nav>
 
     <button class="back-top" id="back-top" type="button" aria-label="返回卷首" title="返回卷首">
@@ -38,7 +27,7 @@
     </button>
 
     <main id="pages">
-      <section class="page page--hero" id="page-hero">
+      <section class="page page--hero" id="page-hero" data-chapter="scroll">
         <div class="page__inner">
           <div class="scroll-panel scroll-panel--hero">
             <p class="hero__eyebrow" id="since">庚子年 · 2020.01.13</p>
@@ -69,7 +58,7 @@
         </div>
       </section>
 
-      <section class="page page--story" id="page-story">
+      <section class="page page--story" id="page-story" data-chapter="flip">
         <div class="page__inner">
           <div class="scroll-panel">
             <header class="section-head">
@@ -83,7 +72,7 @@
         </div>
       </section>
 
-      <section class="page page--notes" id="page-notes">
+      <section class="page page--notes" id="page-notes" data-chapter="fly">
         <div class="page__inner">
           <div class="scroll-panel">
             <header class="section-head">
@@ -97,7 +86,7 @@
         </div>
       </section>
 
-      <section class="page page--letter" id="page-letter">
+      <section class="page page--letter" id="page-letter" data-chapter="fan">
         <div class="page__inner">
           <div class="scroll-panel scroll-panel--letter">
             <header class="section-head">
@@ -115,13 +104,14 @@
         </div>
       </section>
 
-      <section class="page page--end" id="page-end">
+      <section class="page page--end" id="page-end" data-chapter="seal">
         <div class="page__inner">
           <div class="scroll-panel scroll-panel--end">
-            <p class="end__title">愿余生漫漫，皆是你</p>
+            <p class="end__title" id="end-title"></p>
+            <div class="end__seal" aria-hidden="true">印</div>
             <div class="divider divider--gold" aria-hidden="true"></div>
             <p class="end__date" id="footer-since"></p>
-            <p class="end__hint">点击右侧圆点，或按「卷首」回到首页</p>
+            <p class="end__hint" id="end-hint"></p>
           </div>
         </div>
       </section>
