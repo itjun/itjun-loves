@@ -4,44 +4,118 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
-    <meta name="description" content="一封信" />
-    <meta name="theme-color" content="#f2eadc" />
-    <title>给桂兰</title>
+    <meta name="description" content="纪念我们结婚纪念日" />
+    <meta name="theme-color" content="#f5efe3" />
+    <title>我们的爱 · 庚子年 2020.01.13</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Long+Cang&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap"
       rel="stylesheet"
     />
   </head>
-  <body class="is-closed">
-    <main class="letter" id="letter" tabindex="-1"></main>
+  <body>
+    <canvas id="petals" aria-hidden="true"></canvas>
 
-    <button class="cover" id="cover" type="button" aria-label="打开给桂兰的信">
-      <span class="cover__grain" aria-hidden="true"></span>
-      <span class="cover__inner">
-        <span class="cover__name-wrap">
-          <span class="cover__name" id="cover-name"></span>
-          <span class="cover__seal" id="cover-seal" aria-hidden="true"></span>
-        </span>
-        <span class="cover__band" aria-hidden="true">缄</span>
-        <span class="cover__hint" id="cover-hint"></span>
-      </span>
+    <nav class="page-nav" id="page-nav" aria-label="卷页导航"></nav>
+
+    <button class="back-top" id="back-top" type="button" aria-label="返回卷首" title="返回卷首">
+      <span class="back-top__char">卷</span>
+      <span class="back-top__char">首</span>
     </button>
 
-    <noscript>
-      <style>
-        body.is-closed {
-          overflow: auto;
-          height: auto;
-        }
-        .cover {
-          display: none;
-        }
-      </style>
-    </noscript>
+    <main id="pages">
+      <section class="page page--hero" id="page-hero" data-chapter="scroll" data-label="卷首">
+        <div class="page__inner">
+          <div class="scroll-panel scroll-panel--hero">
+            <p class="hero__eyebrow" id="since">庚子年 · 2020.01.13</p>
+            <h1 class="hero__title">我们的爱</h1>
+            <div class="divider divider--gold" aria-hidden="true"></div>
+            <p class="hero__quote" id="love-words"></p>
+
+            <div class="counter">
+              <p class="counter__label">相守</p>
+              <div class="counter__main">
+                <span id="days-num" class="counter__days">0</span>
+                <span class="counter__unit">天</span>
+              </div>
+              <div class="counter__sub" id="timer-hms">
+                <span><em id="hours-num">00</em> 时</span>
+                <span><em id="minutes-num">00</em> 分</span>
+                <span><em id="seconds-num">00</em> 秒</span>
+              </div>
+            </div>
+
+            <p class="scroll-hint">
+              <span>轻拨卷页</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path d="M12 5v14M5 12l7 7 7-7" fill="none" stroke="currentColor" stroke-width="1.5" />
+              </svg>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="page page--story" id="page-story" data-chapter="flip" data-label="时光">
+        <div class="page__inner">
+          <div class="scroll-panel">
+            <header class="section-head">
+              <span class="section-head__mark">◆</span>
+              <h2 class="section__title">时光印记</h2>
+              <span class="section-head__mark">◆</span>
+            </header>
+            <p class="section__desc">从相遇那天起，每一页都值得珍藏</p>
+            <ol class="timeline" id="timeline"></ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="page page--notes" id="page-notes" data-chapter="fly" data-label="情话">
+        <div class="page__inner">
+          <div class="scroll-panel">
+            <header class="section-head">
+              <span class="section-head__mark">◆</span>
+              <h2 class="section__title">想对你说</h2>
+              <span class="section-head__mark">◆</span>
+            </header>
+            <p class="section__desc">藏在心底的话，汇成这一片温柔</p>
+            <div class="notes" id="notes-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page page--letter" id="page-letter" data-chapter="fan" data-label="情书">
+        <div class="page__inner">
+          <div class="scroll-panel scroll-panel--letter">
+            <header class="section-head">
+              <span class="section-head__mark">◆</span>
+              <h2 class="section__title">一纸情书</h2>
+              <span class="section-head__mark">◆</span>
+            </header>
+            <div class="letter">
+              <div class="letter__seal" id="name-mark"></div>
+              <p class="letter__body" id="letter-body"></p>
+              <div class="divider divider--thin" aria-hidden="true"></div>
+              <p class="letter__sign" id="letter-sign"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page page--end" id="page-end" data-chapter="seal" data-label="卷尾">
+        <div class="page__inner">
+          <div class="scroll-panel scroll-panel--end">
+            <p class="end__title" id="end-title"></p>
+            <div class="end__seal" aria-hidden="true">君</div>
+            <div class="divider divider--gold" aria-hidden="true"></div>
+            <p class="end__date" id="footer-since"></p>
+            <p class="end__hint" id="end-hint"></p>
+          </div>
+        </div>
+      </section>
+    </main>
 
     <script type="module" src="/src/main.js"></script>
   </body>

@@ -1,8 +1,9 @@
-# 给桂兰
+# itjun-loves · 我们的爱
 
-一封素笺私信。点开后往下看完即可。
+结婚纪念日网站，传统中国风卷轴版式：宣纸底色、朱红鎏金、全屏卷页滚动。
 
-线上地址：https://itjun.github.io/itjun-loves/
+- 结婚日期：2020-01-13（庚子年）
+- 线上地址：https://itjun.github.io/itjun-loves/
 
 ## 本地开发
 
@@ -15,6 +16,11 @@ npm run dev
 
 编辑 [src/config.js](src/config.js)：
 
-- `NAME`：封面与印
-- `HINT`：封面「启」
-- `LETTER`：称呼、对不起、看见、落款
+- `WEDDING_DATE`：结婚日期
+- `LOVE_WORDS`：卷首情话
+- `NAME_TEXT`：情书印章文字
+- `LETTER`：情书正文与署名
+- `TIMELINE`：时光印记
+- `LOVE_NOTES`：情话短句
+
+改完后 push 到 `main`，GitHub Actions 会自动部署。

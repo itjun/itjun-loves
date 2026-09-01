@@ -2,7 +2,7 @@
   "name": "itjun-loves",
   "private": true,
   "version": "1.0.0",
-  "description": "给桂兰的一封信",
+  "description": "结婚纪念日网站，传统中国风卷轴版式",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,8 +1,24 @@
 import './style.css';
-import { NAME, HINT, LETTER } from './config.js';
+import {
+  LOVE_WORDS,
+  SINCE_TEXT,
+  END_TITLE,
+  END_HINT,
+  NAME_TEXT,
+  LETTER,
+  TIMELINE,
+  LOVE_NOTES,
+} from './config.js';
+import { initPageScroll } from './scroll.js';
+import { initTimer } from './timer.js';
+import { initPetals } from './petals.js';
 
-const cover = document.getElementById('cover');
-const letterEl = document.getElementById('letter');
+function setText(id, text) {
+  const node = document.getElementById(id);
+  if (node) {
+    node.textContent = text;
+  }
+}
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -15,106 +31,40 @@ function el(tag, className, text) {
   return node;
 }
 
-function line(text) {
-  return el('p', 'letter__line', text);
-}
+function hydrate() {
+  setText('love-words', LOVE_WORDS);
+  setText('since', SINCE_TEXT);
+  setText('footer-since', SINCE_TEXT);
+  setText('end-title', END_TITLE);
+  setText('end-hint', END_HINT);
+  setText('name-mark', NAME_TEXT);
+  setText('letter-body', LETTER.body);
+  setText('letter-sign', LETTER.sign);
 
-function renderCover() {
-  const nameEl = document.getElementById('cover-name');
-  const sealEl = document.getElementById('cover-seal');
-  const hintEl = document.getElementById('cover-hint');
-  if (nameEl) {
-    nameEl.textContent = NAME;
-  }
-  if (sealEl) {
-    for (const ch of NAME) {
-      sealEl.appendChild(el('span', 'cover__seal-char', ch));
+  const timelineEl = document.getElementById('timeline');
+  if (timelineEl) {
+    for (const item of TIMELINE) {
+      const li = el('li', 'timeline__item');
+      const content = el('div', 'timeline__content');
+      content.append(el('h3', null, item.title), el('p', null, item.desc));
+      li.append(el('time', 'timeline__date', item.date), content);
+      timelineEl.appendChild(li);
     }
   }
-  if (hintEl) {
-    hintEl.textContent = HINT;
-  }
-}
 
-function renderLetter() {
-  const greeting = el('p', 'letter__greeting letter__line', LETTER.greeting);
-  const apology = el('section', 'letter__section');
-  for (const text of LETTER.apology) {
-    apology.appendChild(line(text));
-  }
-  const thanks = el('section', 'letter__section');
-  for (const text of LETTER.thanks) {
-    thanks.appendChild(line(text));
-  }
-  const sign = el('p', 'letter__sign letter__line', LETTER.sign);
-
-  letterEl.append(greeting, apology, thanks, sign);
-}
-
-function prefersReducedMotion() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
-function revealLines() {
-  const lines = letterEl.querySelectorAll('.letter__line');
-  if (prefersReducedMotion()) {
-    lines.forEach((node) => node.classList.add('is-in'));
-    return;
-  }
-
-  const io = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-in');
-          io.unobserve(entry.target);
-        }
-      }
-    },
-    { threshold: 0.35, rootMargin: '0px 0px -10% 0px' },
-  );
-
-  lines.forEach((node) => io.observe(node));
-}
-
-function openLetter() {
-  if (!document.body.classList.contains('is-closed')) {
-    return;
-  }
-
-  const reduce = prefersReducedMotion();
-  document.body.classList.remove('is-closed');
-  document.body.classList.add(reduce ? 'is-open' : 'is-opening');
-  cover.setAttribute('aria-hidden', 'true');
-  cover.tabIndex = -1;
-
-  let settled = false;
-  const finish = () => {
-    if (settled) {
-      return;
+  const notesEl = document.getElementById('notes-grid');
+  if (notesEl) {
+    for (const note of LOVE_NOTES) {
+      notesEl.appendChild(el('span', 'notes__item', note));
     }
-    settled = true;
-    document.body.classList.remove('is-opening');
-    document.body.classList.add('is-open');
-    cover.hidden = true;
-    letterEl.focus({ preventScroll: true });
-  };
-
-  revealLines();
-
-  if (reduce) {
-    finish();
-    return;
   }
-
-  cover.addEventListener('animationend', (event) => {
-    if (event.target === cover) {
-      finish();
-    }
-  });
-  window.setTimeout(finish, 1100);
 }
 
-renderCover();
-renderLetter();
-cover.addEventListener('click', openLetter);
+hydrate();
+initTimer();
+initPageScroll(
+  Array.from(document.querySelectorAll('.page')),
+  document.getElementById('page-nav'),
+  document.getElementById('back-top'),
+);
+initPetals(document.getElementById('petals'));
