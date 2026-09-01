@@ -6,21 +6,357 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 body {
   font-family: 'ZCOOL XiaoWei', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', serif;
-  background: #faf5f2;
-  color: #5c3d3d;
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
 }
 
-#app {
+#pages {
   position: relative;
-  min-height: 100vh;
-  min-height: 100dvh;
 }
+
+/* ── 全屏分页 ── */
+
+.page {
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  height: 100dvh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.page__inner {
+  width: 100%;
+  max-width: 720px;
+  padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+  text-align: center;
+}
+
+/* ── 第 1 页：暮蓝紫 · 首页 ── */
+
+.page--hero {
+  color: #3d4f72;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(200, 215, 255, 0.95) 0%, transparent 58%),
+    radial-gradient(ellipse at 15% 85%, rgba(180, 195, 240, 0.45) 0%, transparent 48%),
+    radial-gradient(ellipse at 88% 72%, rgba(210, 190, 255, 0.35) 0%, transparent 45%),
+    linear-gradient(168deg, #eef2fc 0%, #dde6f8 38%, #cfd9f2 100%);
+}
+
+.page--hero .hero__eyebrow {
+  font-size: clamp(11px, 1.4vw, 14px);
+  letter-spacing: 0.45em;
+  text-indent: 0.45em;
+  color: rgba(70, 90, 130, 0.55);
+  margin-bottom: 16px;
+}
+
+.page--hero .hero__title {
+  font-family: 'Ma Shan Zheng', 'Long Cang', cursive;
+  font-size: clamp(42px, 8vw, 72px);
+  font-weight: 400;
+  color: #4a5f8a;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  margin-bottom: 12px;
+}
+
+.page--hero .hero__quote {
+  font-family: 'Ma Shan Zheng', 'Long Cang', cursive;
+  font-size: clamp(16px, 2.6vw, 24px);
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  color: rgba(60, 80, 120, 0.78);
+  margin-bottom: clamp(24px, 4vh, 40px);
+}
+
+.page--hero .counter {
+  margin-bottom: clamp(28px, 5vh, 48px);
+}
+
+.page--hero .counter__main {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.15em;
+}
+
+.page--hero .counter__days {
+  font-family: 'Long Cang', 'Ma Shan Zheng', cursive;
+  font-size: clamp(64px, 14vw, 120px);
+  line-height: 1;
+  color: #5a72a8;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 16px rgba(90, 114, 168, 0.2);
+}
+
+.page--hero .counter__unit {
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: clamp(20px, 3vw, 32px);
+  color: rgba(70, 90, 130, 0.7);
+  letter-spacing: 0.1em;
+}
+
+.page--hero .counter__sub {
+  margin-top: 12px;
+  font-size: clamp(16px, 2.5vw, 26px);
+  color: rgba(55, 75, 115, 0.82);
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+}
+
+.page--hero .counter__sub span + span {
+  margin-left: 1em;
+}
+
+.page--hero .counter__sub em {
+  font-style: normal;
+  font-weight: 600;
+}
+
+.page--hero .scroll-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: rgba(70, 90, 130, 0.55);
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  animation: float 2.5s ease-in-out infinite;
+}
+
+.page--hero .scroll-hint svg {
+  opacity: 0.55;
+}
+
+/* ── 第 2 页：暖金 · 时光印记 ── */
+
+.page--story {
+  color: #6b4a38;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255, 230, 190, 0.7) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(240, 200, 160, 0.4) 0%, transparent 45%),
+    linear-gradient(160deg, #fdf6ec 0%, #f5e6d0 50%, #edd9c0 100%);
+}
+
+.page--story .section__title {
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: clamp(28px, 5vw, 40px);
+  color: #8b5a3c;
+  letter-spacing: 0.15em;
+  margin-bottom: 8px;
+}
+
+.page--story .section__desc {
+  font-size: clamp(14px, 2vw, 16px);
+  color: rgba(110, 70, 50, 0.65);
+  margin-bottom: clamp(28px, 4vh, 40px);
+  letter-spacing: 0.08em;
+}
+
+.page--story .timeline {
+  list-style: none;
+  position: relative;
+  padding-left: 24px;
+  text-align: left;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.page--story .timeline::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(180deg, #d4a574, #e8c9a0, #d4a574);
+  border-radius: 1px;
+}
+
+.page--story .timeline__item {
+  position: relative;
+  padding: 0 0 32px 28px;
+}
+
+.page--story .timeline__item:last-child {
+  padding-bottom: 0;
+}
+
+.page--story .timeline__item::before {
+  content: '';
+  position: absolute;
+  left: -22px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #c48850;
+  box-shadow: 0 0 0 4px rgba(196, 136, 80, 0.22);
+}
+
+.page--story .timeline__date {
+  display: block;
+  font-size: 13px;
+  color: rgba(150, 100, 60, 0.75);
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+
+.page--story .timeline__content h3 {
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: clamp(20px, 3.5vw, 26px);
+  color: #8b5a3c;
+  margin-bottom: 4px;
+  letter-spacing: 0.1em;
+}
+
+.page--story .timeline__content p {
+  font-size: clamp(14px, 2vw, 16px);
+  color: rgba(90, 55, 35, 0.72);
+  line-height: 1.7;
+}
+
+/* ── 第 3 页：薄荷绿 · 情话 ── */
+
+.page--notes {
+  color: #3d5c52;
+  background:
+    radial-gradient(ellipse at 70% 15%, rgba(190, 235, 210, 0.65) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 85%, rgba(160, 220, 195, 0.35) 0%, transparent 45%),
+    linear-gradient(175deg, #f0faf5 0%, #d8f0e6 45%, #c5e8da 100%);
+}
+
+.page--notes .section__title {
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: clamp(28px, 5vw, 40px);
+  color: #3d7560;
+  letter-spacing: 0.15em;
+  margin-bottom: 8px;
+}
+
+.page--notes .section__desc {
+  font-size: clamp(14px, 2vw, 16px);
+  color: rgba(55, 90, 75, 0.65);
+  margin-bottom: clamp(24px, 4vh, 36px);
+  letter-spacing: 0.08em;
+}
+
+.page--notes .notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  max-height: min(52vh, 420px);
+  overflow-y: auto;
+  padding: 4px;
+  scrollbar-width: thin;
+}
+
+.page--notes .notes__item {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: clamp(13px, 2vw, 15px);
+  color: #3d6858;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(120, 190, 160, 0.35);
+  backdrop-filter: blur(4px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.page--notes .notes__item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(80, 160, 120, 0.15);
+}
+
+/* ── 第 4 页：玫瑰粉 · 情书 ── */
+
+.page--letter {
+  color: #6b3d48;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(255, 210, 220, 0.75) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 75%, rgba(240, 180, 195, 0.35) 0%, transparent 45%),
+    linear-gradient(170deg, #fff5f7 0%, #fce4ea 45%, #f5d0da 100%);
+}
+
+.page--letter .letter {
+  text-align: center;
+  padding: clamp(28px, 5vw, 44px) clamp(20px, 4vw, 40px);
+  background: rgba(255, 252, 253, 0.82);
+  border: 1px solid rgba(220, 150, 170, 0.28);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 32px rgba(180, 100, 120, 0.1);
+}
+
+.page--letter .letter__mark {
+  font-family: 'Ma Shan Zheng', 'Long Cang', cursive;
+  font-size: clamp(48px, 10vw, 72px);
+  color: #c06078;
+  margin-bottom: 20px;
+  opacity: 0.88;
+}
+
+.page--letter .letter__body {
+  font-size: clamp(15px, 2.2vw, 18px);
+  line-height: 2;
+  color: rgba(80, 40, 50, 0.85);
+  letter-spacing: 0.06em;
+  margin-bottom: 24px;
+}
+
+.page--letter .letter__sign {
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: clamp(16px, 2.5vw, 20px);
+  color: rgba(140, 60, 80, 0.78);
+  letter-spacing: 0.15em;
+}
+
+/* ── 第 5 页：深紫 · 结尾 ── */
+
+.page--end {
+  color: rgba(240, 235, 255, 0.92);
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(120, 90, 180, 0.45) 0%, transparent 55%),
+    radial-gradient(ellipse at 20% 80%, rgba(80, 60, 140, 0.35) 0%, transparent 45%),
+    linear-gradient(175deg, #3d3560 0%, #2a2448 50%, #1e1a38 100%);
+}
+
+.page--end .end__title {
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: clamp(28px, 5vw, 42px);
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  margin-bottom: 16px;
+}
+
+.page--end .end__date {
+  font-size: clamp(12px, 1.5vw, 14px);
+  letter-spacing: 0.38em;
+  text-indent: 0.38em;
+  opacity: 0.65;
+  margin-bottom: 32px;
+}
+
+.page--end .end__hint {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  opacity: 0.45;
+}
+
+/* ── 花瓣 Canvas ── */
 
 #petals {
   position: fixed;
@@ -31,112 +367,72 @@ body {
   z-index: 0;
 }
 
-/* ── Hero ── */
+/* ── 右侧页码导航 ── */
 
-.hero {
-  position: relative;
-  z-index: 1;
+.page-nav {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
   display: flex;
   flex-direction: column;
+  gap: 10px;
+}
+
+.page-nav__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(100, 100, 120, 0.35);
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.page-nav__dot.is-active {
+  background: #5a72a8;
+  border-color: #5a72a8;
+  transform: scale(1.3);
+}
+
+.page-nav__dot:hover {
+  border-color: #5a72a8;
+}
+
+/* ── 返回顶部 ── */
+
+.back-top {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(24px, env(safe-area-inset-bottom));
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  color: #5a72a8;
+  box-shadow: 0 4px 16px rgba(60, 80, 130, 0.18);
+  cursor: pointer;
+  display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  min-height: 100dvh;
-  text-align: center;
-  padding: max(24px, env(safe-area-inset-top)) 24px max(48px, env(safe-area-inset-bottom));
-  background:
-    radial-gradient(ellipse at 50% 0%, rgba(255, 230, 220, 0.9) 0%, transparent 60%),
-    radial-gradient(ellipse at 20% 80%, rgba(255, 200, 190, 0.3) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 70%, rgba(255, 210, 200, 0.25) 0%, transparent 45%),
-    linear-gradient(175deg, #fff8f5 0%, #fce8e4 40%, #f5ddd8 100%);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease, background 0.2s ease;
 }
 
-.hero__eyebrow {
-  font-size: clamp(11px, 1.4vw, 14px);
-  letter-spacing: 0.45em;
-  text-indent: 0.45em;
-  color: rgba(140, 80, 80, 0.55);
-  margin-bottom: 16px;
+.back-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
-.hero__title {
-  font-family: 'Ma Shan Zheng', 'Long Cang', cursive;
-  font-size: clamp(42px, 8vw, 72px);
-  font-weight: 400;
-  color: #8b4545;
-  letter-spacing: 0.2em;
-  text-indent: 0.2em;
-  margin-bottom: 12px;
-}
-
-.hero__quote {
-  font-family: 'Ma Shan Zheng', 'Long Cang', cursive;
-  font-size: clamp(16px, 2.6vw, 24px);
-  letter-spacing: 0.18em;
-  text-indent: 0.18em;
-  color: rgba(120, 60, 60, 0.75);
-  margin-bottom: clamp(28px, 5vh, 48px);
-  max-width: 90%;
-}
-
-.counter {
-  margin-bottom: clamp(32px, 6vh, 56px);
-}
-
-.counter__main {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 0.15em;
-}
-
-.counter__days {
-  font-family: 'Long Cang', 'Ma Shan Zheng', cursive;
-  font-size: clamp(64px, 14vw, 120px);
-  line-height: 1;
-  color: #a04040;
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 2px 12px rgba(200, 100, 100, 0.15);
-}
-
-.counter__unit {
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: clamp(20px, 3vw, 32px);
-  color: rgba(140, 70, 70, 0.7);
-  letter-spacing: 0.1em;
-}
-
-.counter__sub {
-  margin-top: 12px;
-  font-size: clamp(16px, 2.5vw, 26px);
-  color: rgba(100, 55, 55, 0.8);
-  letter-spacing: 0.1em;
-  font-variant-numeric: tabular-nums;
-}
-
-.counter__sub span + span {
-  margin-left: 1em;
-}
-
-.counter__sub em {
-  font-style: normal;
-  font-weight: 600;
-}
-
-.scroll-hint {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  color: rgba(140, 80, 80, 0.6);
-  text-decoration: none;
-  font-size: 13px;
-  letter-spacing: 0.2em;
-  animation: float 2.5s ease-in-out infinite;
-}
-
-.scroll-hint svg {
-  opacity: 0.6;
+.back-top:hover {
+  background: #eef2fc;
 }
 
 @keyframes float {
@@ -149,205 +445,37 @@ body {
   }
 }
 
-/* ── Sections ── */
-
-.section {
-  position: relative;
-  z-index: 1;
-  max-width: 720px;
-  margin: 0 auto;
-  padding: clamp(48px, 8vh, 80px) 24px;
-}
-
-.section__title {
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: clamp(28px, 5vw, 40px);
-  text-align: center;
-  color: #8b4545;
-  letter-spacing: 0.15em;
-  margin-bottom: 8px;
-}
-
-.section__desc {
-  text-align: center;
-  font-size: clamp(14px, 2vw, 16px);
-  color: rgba(100, 60, 60, 0.6);
-  margin-bottom: clamp(32px, 5vh, 48px);
-  letter-spacing: 0.08em;
-}
-
-.reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
-}
-
-.reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ── Timeline ── */
-
-.timeline {
-  list-style: none;
-  position: relative;
-  padding-left: 24px;
-}
-
-.timeline::before {
-  content: '';
-  position: absolute;
-  left: 6px;
-  top: 8px;
-  bottom: 8px;
-  width: 2px;
-  background: linear-gradient(180deg, #e8b4b4, #f0d0c8, #e8b4b4);
-  border-radius: 1px;
-}
-
-.timeline__item {
-  position: relative;
-  padding: 0 0 36px 28px;
-}
-
-.timeline__item:last-child {
-  padding-bottom: 0;
-}
-
-.timeline__item::before {
-  content: '';
-  position: absolute;
-  left: -22px;
-  top: 6px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #d08080;
-  box-shadow: 0 0 0 4px rgba(208, 128, 128, 0.2);
-}
-
-.timeline__date {
-  display: block;
-  font-size: 13px;
-  color: rgba(160, 90, 90, 0.7);
-  letter-spacing: 0.1em;
-  margin-bottom: 4px;
-}
-
-.timeline__content h3 {
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: clamp(20px, 3.5vw, 26px);
-  color: #8b4545;
-  margin-bottom: 4px;
-  letter-spacing: 0.1em;
-}
-
-.timeline__content p {
-  font-size: clamp(14px, 2vw, 16px);
-  color: rgba(90, 50, 50, 0.7);
-  line-height: 1.7;
-}
-
-/* ── Love Notes ── */
-
-.notes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-}
-
-.notes__item {
-  display: inline-block;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: clamp(13px, 2vw, 15px);
-  color: #7a4040;
-  background: rgba(255, 240, 235, 0.85);
-  border: 1px solid rgba(220, 160, 150, 0.3);
-  backdrop-filter: blur(4px);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.notes__item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(200, 120, 100, 0.12);
-}
-
-/* ── Letter ── */
-
-.letter {
-  text-align: center;
-  padding: clamp(32px, 6vw, 48px) clamp(20px, 4vw, 40px);
-  background: rgba(255, 248, 245, 0.8);
-  border: 1px solid rgba(220, 170, 160, 0.25);
-  border-radius: 16px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 8px 32px rgba(180, 100, 80, 0.08);
-}
-
-.letter__mark {
-  font-family: 'Ma Shan Zheng', 'Long Cang', cursive;
-  font-size: clamp(48px, 10vw, 72px);
-  color: #c06060;
-  margin-bottom: 20px;
-  opacity: 0.85;
-}
-
-.letter__body {
-  font-size: clamp(15px, 2.2vw, 18px);
-  line-height: 2;
-  color: rgba(80, 45, 45, 0.85);
-  letter-spacing: 0.06em;
-  margin-bottom: 24px;
-}
-
-.letter__sign {
-  font-family: 'Ma Shan Zheng', cursive;
-  font-size: clamp(16px, 2.5vw, 20px);
-  color: rgba(140, 70, 70, 0.75);
-  letter-spacing: 0.15em;
-}
-
-/* ── Footer ── */
-
-.footer {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  padding: 40px 24px max(32px, env(safe-area-inset-bottom));
-  color: rgba(140, 80, 80, 0.55);
-  font-size: 14px;
-  letter-spacing: 0.12em;
-}
-
-.footer__date {
-  margin-top: 8px;
-  font-size: 12px;
-  letter-spacing: 0.3em;
-  opacity: 0.7;
-}
-
-/* ── Mobile ── */
+/* ── 手机适配 ── */
 
 @media (max-width: 480px) {
-  .hero {
+  .page__inner {
     padding-left: 16px;
     padding-right: 16px;
   }
 
-  .counter__sub span + span {
+  .page--hero .counter__sub span + span {
     margin-left: 0.6em;
   }
 
-  .section {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-
-  .notes__item {
+  .page--notes .notes__item {
     padding: 6px 12px;
     font-size: 13px;
+  }
+
+  .page-nav {
+    right: 10px;
+    gap: 8px;
+  }
+
+  .page-nav__dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .back-top {
+    width: 40px;
+    height: 40px;
+    right: 12px;
+    bottom: 20px;
   }
 }

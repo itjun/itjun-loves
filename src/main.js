@@ -7,6 +7,7 @@ import {
   TIMELINE,
   LOVE_NOTES,
 } from './config.js';
+import { initPageScroll } from './scroll.js';
 import './timer.js';
 
 document.getElementById('love-words').textContent = LOVE_WORDS;
@@ -38,21 +39,10 @@ for (const note of LOVE_NOTES) {
   notesEl.appendChild(span);
 }
 
-const revealEls = document.querySelectorAll('.reveal');
-const revealObserver = new IntersectionObserver(
-  (entries) => {
-    for (const entry of entries) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('is-visible');
-      }
-    }
-  },
-  { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
-);
-for (const el of revealEls) {
-  revealObserver.observe(el);
-}
+const pages = Array.from(document.querySelectorAll('.page'));
+initPageScroll(pages, document.getElementById('page-nav'), document.getElementById('back-top'));
 
+/* ── 花瓣动画（仅首页显示） ── */
 const canvas = document.getElementById('petals');
 const ctx = canvas.getContext('2d');
 
@@ -60,7 +50,7 @@ let W = 0;
 let H = 0;
 let dpr = 1;
 let petals = [];
-const PETAL_COUNT = 28;
+const PETAL_COUNT = 24;
 
 function resizeCanvas() {
   dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -77,12 +67,12 @@ function createPetal() {
   return {
     x: Math.random() * W,
     y: Math.random() * H - H,
-    size: 6 + Math.random() * 10,
-    speed: 0.4 + Math.random() * 0.8,
-    drift: (Math.random() - 0.5) * 0.4,
+    size: 5 + Math.random() * 8,
+    speed: 0.3 + Math.random() * 0.6,
+    drift: (Math.random() - 0.5) * 0.3,
     rot: Math.random() * Math.PI * 2,
     rotSpeed: (Math.random() - 0.5) * 0.02,
-    alpha: 0.15 + Math.random() * 0.35,
+    alpha: 0.12 + Math.random() * 0.25,
   };
 }
 
@@ -100,7 +90,7 @@ function drawPetal(p) {
   ctx.translate(p.x, p.y);
   ctx.rotate(p.rot);
   ctx.globalAlpha = p.alpha;
-  ctx.fillStyle = '#e8a0a8';
+  ctx.fillStyle = '#9cb4e8';
 
   ctx.beginPath();
   ctx.moveTo(0, -p.size);

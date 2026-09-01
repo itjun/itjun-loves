@@ -14,7 +14,7 @@ export const LETTER = {
 };
 
 export const TIMELINE = [
-  { date: '2019', title: '相遇', desc: '命运让我们在人海中看见彼此' },
+  { date: '2018', title: '相遇', desc: '命运让我们在人海中看见彼此' },
   { date: '2020.01.13', title: '结为连理', desc: '从此余生，携手同行' },
   { date: '至今', title: '相守', desc: '每一天都比昨天更爱你一点' },
 ];
@@ -45,3 +45,5 @@ export const LOVE_NOTES = [
   '这是爱',
   '周桂兰',
 ];
+
+export const PAGE_LABELS = ['首页', '时光', '情话', '情书', '结尾'];
