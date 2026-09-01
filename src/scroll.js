@@ -1,22 +1,28 @@
 import { PAGE_LABELS } from './config.js';
 
+const CLOSE_MS = 480;
+const OPEN_MS = 620;
+const FAN_MS = 700;
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /**
- * 全屏分页滚动：滚轮/触控板一次翻一页
+ * 竹帘开合 + 扇面展开的全屏翻页
  */
 export function initPageScroll(pages, navEl, backTopBtn) {
   let currentIndex = 0;
-  let isScrolling = false;
+  let isBusy = false;
   let touchStartY = 0;
+  const curtain = document.getElementById('curtain');
+  const strips = curtain.querySelectorAll('.curtain__strip');
 
-  function scrollToPage(index, smooth = true) {
-    if (index < 0 || index >= pages.length) {
-      return;
-    }
-    currentIndex = index;
-    pages[index].scrollIntoView({ behavior: smooth ? 'smooth' : 'instant', block: 'start' });
-    updateNav();
-    updateBackTop();
-  }
+  // 条幅错开延迟，更有竹帘感
+  strips.forEach((strip, i) => {
+    const delay = Math.abs(i - (strips.length - 1) / 2) * 0.04;
+    strip.style.setProperty('--strip-delay', `${delay}s`);
+  });
 
   function updateNav() {
     const dots = navEl.querySelectorAll('.page-nav__dot');
@@ -29,21 +35,86 @@ export function initPageScroll(pages, navEl, backTopBtn) {
     backTopBtn.classList.toggle('is-visible', currentIndex > 0);
   }
 
+  function setActivePage(index, direction) {
+    for (let i = 0; i < pages.length; i++) {
+      const page = pages[i];
+      const panel = page.querySelector('.scroll-panel');
+      const isActive = i === index;
+
+      page.classList.toggle('is-active', isActive);
+      page.classList.remove('fan-from-left', 'fan-from-right');
+
+      if (panel) {
+        panel.classList.remove('is-fanning');
+      }
+
+      if (isActive) {
+        const fanClass = direction === 'prev' ? 'fan-from-left' : 'fan-from-right';
+        page.classList.add(fanClass);
+        if (panel) {
+          // 强制重播扇面动画
+          void panel.offsetWidth;
+          panel.classList.add('is-fanning');
+        }
+      }
+    }
+  }
+
+  async function scrollToPage(index, direction = 'next') {
+    if (index < 0 || index >= pages.length || index === currentIndex || isBusy) {
+      return;
+    }
+
+    isBusy = true;
+    const dir = direction === 'prev' ? 'prev' : 'next';
+
+    // 1. 竹帘落下盖住当前页
+    curtain.classList.add('is-visible');
+    void curtain.offsetWidth;
+    curtain.classList.add('is-closed');
+    await wait(CLOSE_MS);
+
+    // 2. 切换页面，准备扇面展开
+    currentIndex = index;
+    setActivePage(index, dir);
+    updateNav();
+    updateBackTop();
+
+    // 3. 竹帘掀开，露出新页扇面
+    curtain.classList.remove('is-closed');
+    await wait(OPEN_MS);
+
+    curtain.classList.remove('is-visible');
+    await wait(FAN_MS - 200);
+
+    isBusy = false;
+  }
+
   function goNext() {
     if (currentIndex < pages.length - 1) {
-      scrollToPage(currentIndex + 1);
+      scrollToPage(currentIndex + 1, 'next');
     }
   }
 
   function goPrev() {
     if (currentIndex > 0) {
-      scrollToPage(currentIndex - 1);
+      scrollToPage(currentIndex - 1, 'prev');
     }
   }
 
   function onWheel(e) {
-    if (isScrolling) {
-      e.preventDefault();
+    // 情话列表内部滚动时不翻页
+    const notes = e.target.closest('.notes');
+    if (notes && notes.scrollHeight > notes.clientHeight) {
+      const atTop = notes.scrollTop <= 0;
+      const atBottom = notes.scrollTop + notes.clientHeight >= notes.scrollHeight - 1;
+      if ((e.deltaY < 0 && !atTop) || (e.deltaY > 0 && !atBottom)) {
+        return;
+      }
+    }
+
+    e.preventDefault();
+    if (isBusy) {
       return;
     }
 
@@ -52,21 +123,17 @@ export function initPageScroll(pages, navEl, backTopBtn) {
       return;
     }
 
-    e.preventDefault();
-    isScrolling = true;
-
     if (delta > 0) {
       goNext();
     } else {
       goPrev();
     }
-
-    setTimeout(() => {
-      isScrolling = false;
-    }, 900);
   }
 
   function onKeyDown(e) {
+    if (isBusy) {
+      return;
+    }
     if (e.key === 'ArrowDown' || e.key === 'PageDown') {
       e.preventDefault();
       goNext();
@@ -75,7 +142,7 @@ export function initPageScroll(pages, navEl, backTopBtn) {
       goPrev();
     } else if (e.key === 'Home') {
       e.preventDefault();
-      scrollToPage(0);
+      scrollToPage(0, 'prev');
     }
   }
 
@@ -84,6 +151,9 @@ export function initPageScroll(pages, navEl, backTopBtn) {
   }
 
   function onTouchEnd(e) {
+    if (isBusy) {
+      return;
+    }
     const diff = touchStartY - e.changedTouches[0].clientY;
     if (Math.abs(diff) < 50) {
       return;
@@ -95,7 +165,6 @@ export function initPageScroll(pages, navEl, backTopBtn) {
     }
   }
 
-  // 构建右侧导航圆点
   for (let i = 0; i < pages.length; i++) {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -103,38 +172,23 @@ export function initPageScroll(pages, navEl, backTopBtn) {
     const label = PAGE_LABELS[i] || `第 ${i + 1} 页`;
     btn.setAttribute('aria-label', label);
     btn.title = label;
-    btn.addEventListener('click', () => scrollToPage(i));
+    btn.addEventListener('click', () => {
+      const dir = i < currentIndex ? 'prev' : 'next';
+      scrollToPage(i, dir);
+    });
     navEl.appendChild(btn);
   }
 
-  backTopBtn.addEventListener('click', () => scrollToPage(0));
+  backTopBtn.addEventListener('click', () => scrollToPage(0, 'prev'));
 
   window.addEventListener('wheel', onWheel, { passive: false });
   window.addEventListener('keydown', onKeyDown);
   window.addEventListener('touchstart', onTouchStart, { passive: true });
   window.addEventListener('touchend', onTouchEnd, { passive: true });
 
-  // 同步当前页（例如浏览器刷新后位置）
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-          const idx = pages.indexOf(entry.target);
-          if (idx >= 0 && idx !== currentIndex) {
-            currentIndex = idx;
-            updateNav();
-            updateBackTop();
-          }
-        }
-      }
-    },
-    { threshold: 0.5 }
-  );
-
-  for (const page of pages) {
-    observer.observe(page);
-  }
-
+  // 初始：只显示第一页，禁止原生滚动
+  document.documentElement.classList.add('is-stage');
+  setActivePage(0, 'next');
   updateNav();
   updateBackTop();
 }
